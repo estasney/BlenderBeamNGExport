@@ -2,19 +2,33 @@
 
 bl_info = {
     "name": "Export Jbeam (.jbeam)",
-    "author": "Mike Baker (rmikebaker)",
+    "author": "Mike Baker (rmikebaker) & Thomas Portassau (50thomatoes50)",
+    "location": "File > Import-Export",
     "version": (0, 0, 1),
+    "wiki_url": 'http://www.beamng.com/threads/5775-Blender-Script-to-Export-Nodes-and-Beams',
+    "tracker_url": "https://github.com/rmikebaker/BlenderBeamNGExport/issues",
+    "warning": "Under construction!",
     "description": "Export Nodes and Beams for BeamNG (.jbeam)",
-    "category": "Object"
+    #"category": "Object"
+    "category": "Import-Export"
     }
 
 __version__ = '0.0.1'
 
 
-import bpy
 import os
 import struct
 
+import bpy
+from bpy.props import (BoolProperty,
+                       FloatProperty,
+                       StringProperty,
+                       EnumProperty,
+                       )
+from bpy_extras.io_utils import (ExportHelper,
+                                 path_reference_mode,
+                                 axis_conversion,
+                                 )
 
 class NGnode(object):
     def __init__(self, i, nodeName, x, y, z):
@@ -29,7 +43,29 @@ class ExportJbeam(bpy.types.Operator):
     """Export Nodes and Beams to .jbeam file for BeamNG"""
     bl_idname = 'object.export_jbeam'
     bl_description = 'Export for use in BeamNG (.jbeam)'
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
     bl_label = 'Export Jbeam' + ' v.' + __version__
+    
+    # From ExportHelper. Filter filenames.
+    filename_ext = ".jbeam"
+    filter_glob = StringProperty(default="*.jbeam", options={'HIDDEN'})
+ 
+    filepath = bpy.props.StringProperty(
+        name="File Path", 
+        description="File path used for exporting the jbeam file", 
+        maxlen= 1024, default= "")
+    
+ 
+    exp_ef = bpy.props.BoolProperty(
+        name = "Export edge from face",
+        description="",
+        default = True)
+    
+    exp_tricol = bpy.props.BoolProperty(
+        name = "Export Faces to colision triangle",
+        description="",
+        default = True)
 
     # execute() is called by blender when running the operator.
     def execute(self, context):
@@ -142,6 +178,7 @@ class ExportJbeam(bpy.types.Operator):
                     file.write(anewline)
                     i += 1
     
+                mesh.update(True, True)  #http://www.blender.org/documentation/blender_python_api_2_69_7/bpy.types.Mesh.html?highlight=update#bpy.types.Mesh.update
                 file.write('//--Beams--')
                 file.write(anewline)
                 for e in mesh.edges:
@@ -185,13 +222,22 @@ class ExportJbeam(bpy.types.Operator):
             if file: file.close()
         
         # this lets blender know the operator finished successfully.
-        return {'FINISHED'}                               
+        return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
+def menu_func_export(self, context):
+    self.layout.operator(ExportJbeam.bl_idname, text='Export Jbeam v.' + __version__ + ' (.jbeam)')
 
 def register():
-    bpy.utils.register_class(ExportJbeam)
+    bpy.utils.register_module(__name__)
+    bpy.types.INFO_MT_file_export.append(menu_func_export)
 
 def unregister():
-    bpy.utils.unregister_class(ExportJbeam)
+    bpy.utils.unregister_module(__name__)
+    bpy.types.INFO_MT_file_export.remove(menu_func_export)
 
 # This allows you to run the script directly from blenders text editor
 # to test the addon without having to install it.
