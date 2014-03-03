@@ -236,10 +236,32 @@ class ExportJbeam(bpy.types.Operator):
                             file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
                             file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
                         else:
-                            self.report({'ERROR'}, 'ERROR: Face %i isn\'t 3 or 4 vertices' % vs.index)
+                            self.report({'ERROR'}, 'ERROR: Face %i isn\'t tri or quad.' % vs.index)
                 if not(self.listbn):
                     file.write('\t\t\t],\n')
                 
+                if self.exp_tricol:
+                    file.write('//--tri col--')
+                    file.write(anewline)
+                    ob_new.modifiers.new("tricol","TRIANGULATE")
+                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier="tricol")
+                    if not(self.listbn):
+                        file.write('\t\t"triangles":[\n\t\t\t["id1:", "id2:", "id3:"],\n')
+                    mesh = ob_new.data
+                    mesh.update(False, True)
+                    for f in mesh.tessfaces:
+                        vs = f.vertices
+                        if len(vs) == 3:
+                            nodeIndex1 = ([n.i for n in sortedNodes].index(vs[0]))
+                            nodeIndex2 = ([n.i for n in sortedNodes].index(vs[1]))
+                            nodeIndex3 = ([n.i for n in sortedNodes].index(vs[2]))
+                            file.write('["%s","%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                        else:
+                             self.report({'ERROR'}, 'ERROR: TriCol %i isn\'t tri' % vs.index)
+                    if not(self.listbn):
+                        file.write('\t\t\t],\n')
+                if not(self.listbn):
+                    file.write('\t}\n}')
                 file.flush()
                 file.close()
     
