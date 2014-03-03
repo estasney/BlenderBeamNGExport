@@ -82,6 +82,8 @@ class ExportJbeam(bpy.types.Operator):
         file = None
         
         # Need path for saving data to file
+        if not(os.path.isdir(self.filepath)):
+            self.filepath = os.path.split(self.filepath)[0]
         if not(self.use_filepath):
             self.filepath = bpy.path.abspath('//')
             if self.filepath == '':
