@@ -56,7 +56,16 @@ class ExportJbeam(bpy.types.Operator):
         description="File path used for exporting the jbeam file", 
         maxlen= 1024, default= "")
     
- 
+    use_filepath = bpy.props.BoolProperty(
+        name = "Use filepath defined when exported, else use the blender file location",
+        description="",
+        default = True)
+    
+    listbn = bpy.props.BoolProperty(
+        name = "Export has a list of beam and nodes",
+        description="",
+        default = True)
+    
     exp_ef = bpy.props.BoolProperty(
         name = "Export edge from face",
         description="",
@@ -73,10 +82,11 @@ class ExportJbeam(bpy.types.Operator):
         file = None
         
         # Need path for saving data to file
-        filepath = bpy.path.abspath('//')
-        if filepath == '':
-            self.report({'ERROR'}, "You must save your objects to a .blend file first")        
-            return {'FINISHED'}
+        if not(self.use_filepath):
+            self.filepath = bpy.path.abspath('//')
+            if self.filepath == '':
+                self.report({'ERROR'}, "You must save your objects to a .blend file first")        
+                return {'FINISHED'}
                                                
         scene = context.scene
 
@@ -148,19 +158,31 @@ class ExportJbeam(bpy.types.Operator):
                     nodes.append(node)
     
                 sortedz = sorted(nodes, key=lambda NGnode: NGnode.z)
+                #sortedz is nodes sorted by Z axis
                 sortedx = sorted(sortedz, key=lambda NGnode: NGnode.x, reverse=True)
-                sortedNodes = sorted(sortedx, key=lambda NGnode: NGnode.y)                
+                #sortedx is sortedz sorted by -X axis 
+                sortedNodes = sorted(sortedx, key=lambda NGnode: NGnode.y)
+                #sortedNodes is sortedx sorted by Yaxis
+                #sortedNodes is nodes sorted by Z axis then -X axis then Y axis?
                     
                 # Export
                 anewline = '\n'
                 filename = objsel.name + '.jbeam'
-                file = open(filepath + '/' + filename, 'wt')
-    
+                file = open(self.filepath + '/' + filename, 'wt')
+                if not(self.listbn):
+                    file.write('{\n\t"%s":{\n\t\t"information":{\n\t\t\t"name":"%s",\n\t\t\t"authors":"%s"},\n\t\t"slotType":"main",\n' % (objsel.name,objsel.name,self.bl_label))
+                mesh.update(True, True)  #http://www.blender.org/documentation/blender_python_api_2_69_7/bpy.types.Mesh.html?highlight=update#bpy.types.Mesh.update
+
                 i = 0
                 file.write('//--Nodes--')
                 file.write(anewline)
+                if not(self.listbn):
+                    file.write('\t\t"nodes":[\n\t\t\t["id", "posX", "posY", "posZ"],\n')
                 for v in sortedNodes:
-                    file.write('[\"')
+                    if self.listbn:
+                        file.write('[\"')
+                    else:
+                        file.write('\t\t\t[\"')
                     if v.x > 0:
                         v.nodeName = v.nodeName + 'l' + ('%s' % (i))
                     elif v.x < 0:
@@ -177,10 +199,14 @@ class ExportJbeam(bpy.types.Operator):
                     file.write('],')
                     file.write(anewline)
                     i += 1
-    
-                mesh.update(True, True)  #http://www.blender.org/documentation/blender_python_api_2_69_7/bpy.types.Mesh.html?highlight=update#bpy.types.Mesh.update
+                if not(self.listbn):
+                    file.write('\t\t\t],\n')
+                
+                
                 file.write('//--Beams--')
                 file.write(anewline)
+                if not(self.listbn):
+                    file.write('\t\t"beams":[\n\t\t\t["id1:", "id2:"],\n')
                 for e in mesh.edges:
                     nodeIndex1 = ([n.i for n in sortedNodes].index(e.vertices[0]))
                     file.write('[\"%s\"' % (sortedNodes[nodeIndex1].nodeName)) 
@@ -189,7 +215,31 @@ class ExportJbeam(bpy.types.Operator):
                     file.write('\"%s\"' % (sortedNodes[nodeIndex2].nodeName))
                     file.write('],')
                     file.write(anewline)
-    
+                    
+                if self.exp_ef:
+                    for f in mesh.tessfaces:
+                        vs = f.vertices
+                        if len(vs) == 3:
+                            nodeIndex1 = ([n.i for n in sortedNodes].index(vs[0]))
+                            nodeIndex2 = ([n.i for n in sortedNodes].index(vs[1]))
+                            nodeIndex3 = ([n.i for n in sortedNodes].index(vs[2]))
+                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex1].nodeName))
+                        elif len(vs) == 4:
+                            nodeIndex1 = ([n.i for n in sortedNodes].index(vs[0]))
+                            nodeIndex2 = ([n.i for n in sortedNodes].index(vs[1]))
+                            nodeIndex3 = ([n.i for n in sortedNodes].index(vs[2]))
+                            nodeIndex4 = ([n.i for n in sortedNodes].index(vs[3]))
+                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
+                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
+                        else:
+                            self.report({'ERROR'}, 'ERROR: Face %i isn\'t 3 or 4 vertices' % vs.index)
+                if not(self.listbn):
+                    file.write('\t\t\t],\n')
+                
                 file.flush()
                 file.close()
     
