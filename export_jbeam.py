@@ -4,22 +4,22 @@ bl_info = {
     "name": "Export Jbeam (.jbeam)",
     "author": "Mike Baker (rmikebaker) & Thomas Portassau (50thomatoes50)",
     "location": "File > Import-Export",
-    "version": (0, 0, 1),
-    "wiki_url": 'http://www.beamng.com/threads/5775-Blender-Script-to-Export-Nodes-and-Beams',
+    "version": (0, 1, 0),
+    "wiki_url": 'http://wiki.beamng.com/Blender_Exporter_plugin',
     "tracker_url": "https://github.com/rmikebaker/BlenderBeamNGExport/issues",
     "warning": "Under construction!",
-    "description": "Export Nodes and Beams for BeamNG (.jbeam)",
+    "description": "Export Nodes,Beams and Colision for BeamNG (.jbeam)",
     #"category": "Object"
     "category": "Import-Export"
     }
 
-__version__ = '0.0.1'
+__version__ = '0.1.0'
 
 
 import os
 import struct
-
 import bpy
+
 from bpy.props import (BoolProperty,
                        FloatProperty,
                        StringProperty,
@@ -29,6 +29,62 @@ from bpy_extras.io_utils import (ExportHelper,
                                  path_reference_mode,
                                  axis_conversion,
                                  )
+
+class BeamGen(bpy.types.Operator):
+    bl_idname = 'object.beamgen'
+    bl_description = 'beamGen'  + ' v.' + __version__
+    bl_label = 'beam(edge) generator'
+
+    # execute() is called by blender when running the operator.
+    def execute(self, context):
+        print("started")
+
+        # Save currently active object
+        #active = context.active_object
+        active = context.edit_object
+        if active is None: 
+            self.report({'WARNING'}, 'WARNING : Not in edit mode! Operation cancelled!')
+            print('CANCELLLED: Not in edit mode')
+            return {'CANCELLED'}
+            
+        print("obj:"+active.name)
+        nodes = []
+        edge_tmp = []
+        
+        bpy.ops.object.mode_set(mode='OBJECT') 
+        
+        for v in active.data.vertices:
+            if v.select:
+                nodes.append(v.index)
+        
+        nb_point = len(nodes)
+        print("nb_point:"+str(nb_point))
+        if nb_point <= 1:
+            self.report({'ERROR'}, 'ERROR: Select more than 1 point' )
+        
+        
+        origin = len(active.data.edges)-1
+        i = 0
+        nb_edge = 0
+        j = nb_point
+        while(j!=0):
+            j -= 1
+            nb_edge += (nb_point-(nb_point-j))
+        active.data.edges.add( nb_edge )
+        
+        for n1 in nodes:
+            for n2 in nodes:
+                if n1 != n2 and n2 > n1 :
+                    i += 1
+                    active.data.edges[origin+i].vertices[0] = n1
+                    active.data.edges[origin+i].vertices[1] = n2
+        
+        bpy.ops.object.mode_set(mode='EDIT')
+            
+
+        
+        # this lets blender know the operator finished successfully.
+        return {'FINISHED'}
 
 class NGnode(object):
     def __init__(self, i, nodeName, x, y, z):
@@ -64,7 +120,7 @@ class ExportJbeam(bpy.types.Operator):
     listbn = bpy.props.BoolProperty(
         name = "Export has a list of beam and nodes",
         description="",
-        default = True)
+        default = False)
     
     exp_ef = bpy.props.BoolProperty(
         name = "Export edge from face",
@@ -75,20 +131,16 @@ class ExportJbeam(bpy.types.Operator):
         name = "Export Faces to colision triangle",
         description="",
         default = True)
+    
+    exp_diag = bpy.props.BoolProperty(
+        name = "Edge on quad face",
+        description="",
+        default = True)
 
-    # execute() is called by blender when running the operator.
+    # execute() is called by blender when running the exporter.
     def execute(self, context):
 
         file = None
-        
-        # Need path for saving data to file
-        if not(os.path.isdir(self.filepath)):
-            self.filepath = os.path.split(self.filepath)[0]
-        if not(self.use_filepath):
-            self.filepath = bpy.path.abspath('//')
-            if self.filepath == '':
-                self.report({'ERROR'}, "You must save your objects to a .blend file first")        
-                return {'FINISHED'}
                                                
         scene = context.scene
 
@@ -100,7 +152,11 @@ class ExportJbeam(bpy.types.Operator):
             if (o.type == 'MESH'):
                 o.select = False
                 selectedObjects.append(o)
-        
+        if len(selectedObjects) == 0:
+            self.report({'WARNING'}, 'WARNING : Must be select objects to export')
+            print('CANCELLLED: Must be select objects to export')
+            return {'CANCELLED'}
+        tempMesh = None
         try:
             for objsel in selectedObjects:
                 # Make the active object be the selected one
@@ -114,6 +170,11 @@ class ExportJbeam(bpy.types.Operator):
                     nodePrefix = objsel['JbeamNodePrefix']
                 except:
                     nodePrefix = 'n'
+                    
+                try:
+                    jslot = objsel['JbeamSlot']
+                except:
+                    jslot = 'main'
                     
                 #-------------------------------------
                 # Create a copy of the selected object
@@ -166,13 +227,36 @@ class ExportJbeam(bpy.types.Operator):
                 sortedNodes = sorted(sortedx, key=lambda NGnode: NGnode.y)
                 #sortedNodes is sortedx sorted by Yaxis
                 #sortedNodes is nodes sorted by Z axis then -X axis then Y axis?
+                
+                
                     
                 # Export
                 anewline = '\n'
-                filename = objsel.name + '.jbeam'
-                file = open(self.filepath + '/' + filename, 'wt')
+                #filename = objsel.name + '.jbeam'
+                if '.jbeam' in objsel.name:
+                    filename = objsel.name
+                else:
+                    filename = objsel.name + '.jbeam'
+                print("File = " + str(self.filepath) + filename )
+                
+                if not(os.path.isdir(self.filepath)):
+                    bpy.data.meshes.remove(tempMesh)
+                    self.report({'WARNING'}, 'WARNING : Must be exported in a directory. Export cancelled!')
+                    print('CANCELLLED: Must be exported in a directory')
+                    return {'CANCELLED'}
+                file = open(self.filepath+filename, 'wt')
+                #file = open(self.filepath + '/' + filename, 'wt')
+                
                 if not(self.listbn):
-                    file.write('{\n\t"%s":{\n\t\t"information":{\n\t\t\t"name":"%s",\n\t\t\t"authors":"%s"},\n\t\t"slotType":"main",\n' % (objsel.name,objsel.name,self.bl_label))
+                    if(bpy.context.user_preferences.system.author == ""):
+                        author = self.bl_label
+                    else:
+                        author = bpy.context.user_preferences.system.author + "," + self.bl_label
+                    if '.jbeam' in objsel.name:
+                        name = objsel.name[0:len(objsel.name)-6]
+                    else:
+                        name = objsel.name
+                    file.write('{\n\t"%s":{\n\t\t"information":{\n\t\t\t"name":"%s",\n\t\t\t"authors":"%s"},\n\t\t"slotType":"%s",\n' % (name,name,author,jslot))
                 mesh.update(True, True)  #http://www.blender.org/documentation/blender_python_api_2_69_7/bpy.types.Mesh.html?highlight=update#bpy.types.Mesh.update
 
                 i = 0
@@ -210,8 +294,12 @@ class ExportJbeam(bpy.types.Operator):
                 if not(self.listbn):
                     file.write('\t\t"beams":[\n\t\t\t["id1:", "id2:"],\n')
                 for e in mesh.edges:
+                    if self.listbn:
+                        file.write('[\"')
+                    else:
+                        file.write('\t\t\t[\"')
                     nodeIndex1 = ([n.i for n in sortedNodes].index(e.vertices[0]))
-                    file.write('[\"%s\"' % (sortedNodes[nodeIndex1].nodeName)) 
+                    file.write('%s\"' % (sortedNodes[nodeIndex1].nodeName)) 
                     file.write(',') 
                     nodeIndex2 = ([n.i for n in sortedNodes].index(e.vertices[1]))
                     file.write('\"%s\"' % (sortedNodes[nodeIndex2].nodeName))
@@ -225,18 +313,36 @@ class ExportJbeam(bpy.types.Operator):
                             nodeIndex1 = ([n.i for n in sortedNodes].index(vs[0]))
                             nodeIndex2 = ([n.i for n in sortedNodes].index(vs[1]))
                             nodeIndex3 = ([n.i for n in sortedNodes].index(vs[2]))
-                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
-                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
-                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex1].nodeName))
+                            if self.listbn:
+                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex1].nodeName))
+                            else:
+                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex1].nodeName))
                         elif len(vs) == 4:
                             nodeIndex1 = ([n.i for n in sortedNodes].index(vs[0]))
                             nodeIndex2 = ([n.i for n in sortedNodes].index(vs[1]))
                             nodeIndex3 = ([n.i for n in sortedNodes].index(vs[2]))
                             nodeIndex4 = ([n.i for n in sortedNodes].index(vs[3]))
-                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
-                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
-                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
-                            file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
+                            if self.listbn:
+                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
+                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
+                            else:
+                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
+                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
+                            if self.exp_diag:
+                                if self.listbn:
+                                    file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                    file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex4].nodeName))
+                                else:
+                                    file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                    file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex4].nodeName))
                         else:
                             self.report({'ERROR'}, 'ERROR: Face %i isn\'t tri or quad.' % vs.index)
                 if not(self.listbn):
@@ -254,6 +360,8 @@ class ExportJbeam(bpy.types.Operator):
                     for f in mesh.tessfaces:
                         vs = f.vertices
                         if len(vs) == 3:
+                            if not(self.listbn):
+                                file.write('\t\t\t')
                             nodeIndex1 = ([n.i for n in sortedNodes].index(vs[0]))
                             nodeIndex2 = ([n.i for n in sortedNodes].index(vs[1]))
                             nodeIndex3 = ([n.i for n in sortedNodes].index(vs[2]))
@@ -266,7 +374,7 @@ class ExportJbeam(bpy.types.Operator):
                     file.write('\t}\n}')
                 file.flush()
                 file.close()
-    
+
                 # Deselect our new object
                 ob_new.select = False
                 
@@ -293,7 +401,9 @@ class ExportJbeam(bpy.types.Operator):
             
         except Exception as e:
             self.report({'ERROR'}, 'ERROR: ' + str(e))
+            print('ERROR: ' + str(e))
             if file: file.close()
+            if tempMesh: bpy.data.meshes.remove(tempMesh)
         
         # this lets blender know the operator finished successfully.
         return {'FINISHED'}
@@ -308,12 +418,18 @@ def menu_func_export(self, context):
 def register():
     bpy.utils.register_module(__name__)
     bpy.types.INFO_MT_file_export.append(menu_func_export)
+    #bpy.utils.register_class(BeamGen)
+
 
 def unregister():
     bpy.utils.unregister_module(__name__)
     bpy.types.INFO_MT_file_export.remove(menu_func_export)
+    #bpy.utils.unregister_class(BeamGen)
 
 # This allows you to run the script directly from blenders text editor
 # to test the addon without having to install it.
 if __name__ == "__main__":
     register()
+    
+
+    
