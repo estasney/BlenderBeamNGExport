@@ -23,7 +23,7 @@ class NGnode(object):
         self.z = z
 
 def execute(filepath, context, listbn, exp_ef, exp_tricol, exp_diag ):
-
+    __version__ = '0.1.2'
     file = None
                                            
     scene = context.scene

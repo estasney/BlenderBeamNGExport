@@ -26,7 +26,7 @@ bl_info = {
     "name": "Export Jbeam (.jbeam)",
     "author": "Mike Baker (rmikebaker) & Thomas Portassau (50thomatoes50)",
     "location": "File > Import-Export",
-    "version": (0, 1, 1),
+    "version": (0, 1, 2),
     "wiki_url": 'http://wiki.beamng.com/Blender_Exporter_plugin',
     "tracker_url": "https://github.com/50thomatoes50/BlenderBeamNGExport/issues",
     "warning": "Under construction!",
@@ -35,7 +35,7 @@ bl_info = {
     "category": "Import-Export"
     }
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 #http://wiki.blender.org/index.php/Dev:2.5/Py/Scripts/Cookbook/Code_snippets/Multi-File_packages#init_.py
 if "bpy" in locals():
