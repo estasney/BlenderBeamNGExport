@@ -13,13 +13,15 @@ from commit:5ec8555d0ad207a946ca51927e50f1a0fa290db0
 Changelog
 -------------------
 ####Initial version from rmikebaker####
--Export beams and nodes has a list
+- Export beams and nodes has a list
 
 #### 0.0.1 ####
--Use the menu exporter from Blender
--Export colision triangle
--Can export with jbeam syntax (json)
+- Use the menu exporter from Blender
+- Export colision triangle
+- Can export with jbeam syntax (json)
 
 #### 0.1.0 ####
--Can generate beam/edge between all selected nodes/vertice
+- Can generate beam/edge between all selected nodes/vertice
 
+#### 0.1.1 ####
+- Change file layout
