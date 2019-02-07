@@ -30,34 +30,34 @@ class ExportJbeam(bpy.types.Operator):
 
     # From ExportHelper. Filter filenames.
     filename_ext = ".jbeam"
-    filter_glob = StringProperty(default="*.jbeam", options={'HIDDEN'})
+    filter_glob: StringProperty(default="*.jbeam", options={'HIDDEN'})
 
-    filepath = bpy.props.StringProperty(
+    filepath: bpy.props.StringProperty(
         name="File Path",
         description="File path used for exporting the jbeam file",
         maxlen= 1024, default= "")
 
-    listbn = bpy.props.BoolProperty(
+    listbn: bpy.props.BoolProperty(
         name = "Export has a list of beam and nodes",
         description="",
         default = False)
 
-    exp_ef = bpy.props.BoolProperty(
+    exp_ef: bpy.props.BoolProperty(
         name = "Export edge from face",
         description="",
         default = True)
 
-    exp_tricol = bpy.props.BoolProperty(
+    exp_tricol: bpy.props.BoolProperty(
         name = "Export Faces to colision triangle",
         description="",
         default = True)
 
-    exp_diag = bpy.props.BoolProperty(
+    exp_diag: bpy.props.BoolProperty(
         name = "Edge on quad face",
         description="",
         default = True)
 
-    export_scene = bpy.props.BoolProperty(
+    export_scene: bpy.props.BoolProperty(
         name="scene_export",
         description="exporter_prop_scene_tip",
         default=False,
@@ -73,7 +73,7 @@ class ExportJbeam(bpy.types.Operator):
         import sys
         file = None
 
-        scene = context.scene
+        scene = context.collection
 
         # Save currently active object
         active = context.active_object
@@ -100,7 +100,7 @@ class ExportJbeam(bpy.types.Operator):
         try:
             for objsel in exportObjects:
                 # Make the active object be the selected one
-                scene.objects.active = objsel
+                bpy.context.view_layer.objects.active = objsel
                 print(objsel.data.jbeam)
                 # Want to be in Object mode
                 bpy.ops.object.mode_set(mode='OBJECT')
@@ -129,8 +129,8 @@ class ExportJbeam(bpy.types.Operator):
                 # Link new object to the given scene, select it, and
                 # make it active
                 scene.objects.link(ob_new)
-                ob_new.select = True
-                scene.objects.active = ob_new
+                ob_new.select_set(True)
+                bpy.context.view_layer.objects.active = ob_new
 
                 # Apply transforms
                 bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
@@ -195,16 +195,16 @@ class ExportJbeam(bpy.types.Operator):
                 #file = open(self.filepath + '/' + filename, 'wt')
 
                 if not(context.scene.jbeam.listbn):
-                    if(bpy.context.user_preferences.system.author == ""):
-                        author = 'Blender Jbeam' + ' v' + PrintVer()
-                    else:
-                        author = bpy.context.user_preferences.system.author + "," + 'Blender Jbeam' + ' v' + PrintVer()
+                    #if(bpy.context.preferences.filepaths.author == "" and False):
+                    author = 'Blender Jbeam' + ' v' + PrintVer()
+                    #else:
+                        #author = bpy.context.preferences.filepaths.author + "," + 'Blender Jbeam' + ' v' + PrintVer()
                     if '.jbeam' in objsel.name:
                         name = objsel.name[0:len(objsel.name)-6]
                     else:
                         name = objsel.name
                     file.write('{\n\t"%s":{\n\t\t"information":{\n\t\t\t"name":"%s",\n\t\t\t"authors":"%s"},\n\t\t"slotType":"%s",\n' % (name,objsel.data.jbeam.name,author,objsel.data.jbeam.slot))
-                mesh.update(True, True)  #http://www.blender.org/documentation/blender_python_api_2_69_7/bpy.types.Mesh.html?highlight=update#bpy.types.Mesh.update
+                mesh.update(calc_edges=True, calc_loop_triangles=True)
 
                 i = 0
                 file.write('//--Nodes--')
@@ -254,7 +254,7 @@ class ExportJbeam(bpy.types.Operator):
                     file.write(anewline)
 
                 if context.scene.jbeam.exp_ef:
-                    for f in mesh.tessfaces:
+                    for f in mesh.polygons:
                         vs = f.vertices
                         if len(vs) == 3:
                             nodeIndex1 = ([n.i for n in sortedNodes].index(vs[0]))
@@ -308,8 +308,8 @@ class ExportJbeam(bpy.types.Operator):
                     if not(context.scene.jbeam.listbn):
                         file.write('\t\t"triangles":[\n\t\t\t["id1:", "id2:", "id3:"],\n')
                     mesh = ob_new.data
-                    mesh.update(False, True)
-                    for f in mesh.tessfaces:
+                    mesh.update(calc_edges=True, calc_loop_triangles=True)
+                    for f in mesh.polygons:
                         vs = f.vertices
                         if len(vs) == 3:
                             if not(context.scene.jbeam.listbn):
@@ -333,7 +333,7 @@ class ExportJbeam(bpy.types.Operator):
                 file.close()
 
                 # Deselect our new object
-                ob_new.select = False
+                ob_new.select_set(False)
 
                 # Remove the new temp object
                 scene.objects.unlink(ob_new)
@@ -354,7 +354,7 @@ class ExportJbeam(bpy.types.Operator):
                 o.select = True'''
 
             # Restore active object
-            scene.objects.active = active
+            bpy.context.view_layer.objects.active = active
 
             return {'FINISHED'}
 

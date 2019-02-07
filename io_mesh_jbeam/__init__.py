@@ -24,8 +24,8 @@ bl_info = {
     "name": "Export Jbeam (.jbeam)",
     "author": "Mike Baker (rmikebaker) & Thomas Portassau (50thomatoes50)",
     "location": "File > Import-Export",
-    "version": (0, 2, 1),
-    "blender": (2, 65, 0),
+    "version": (0, 3, 0),
+    "blender": (2, 80, 0),
     "wiki_url": 'http://wiki.beamng.com/Blender_Exporter_plugin',
     "tracker_url": "https://github.com/50thomatoes50/BlenderBeamNGExport/issues",
     "warning": "Under construction!",
@@ -34,7 +34,11 @@ bl_info = {
     "category": "Import-Export"
     }
 
-import sys, io, bpy
+import sys
+import io
+import bpy
+import imp
+import os
 #__version__ = PrintVer(sys.modules.get(__name__).bl_info['version'])
 __version__ =''
 #http://wiki.blender.org/index.php/Dev:2.5/Py/Scripts/Cookbook/Code_snippets/Multi-File_packages#init_.py
@@ -44,7 +48,7 @@ __version__ =''
         imp.reload(export_jbeam)
 else:
     import bpy"""
-import imp,os, sys
+
 for filename in [ f for f in os.listdir(os.path.dirname(os.path.realpath(__file__))) if f.endswith(".py") ]:
 	if filename == os.path.basename(__file__): continue
 	mod = sys.modules.get("{}.{}".format(__name__,filename[:-3]))
@@ -60,6 +64,7 @@ class BeamGen(bpy.types.Operator):
     bl_idname = 'object.beamgen'
     bl_description = 'beamGen'  + ' v.' + PrintVer()
     bl_label = 'beam(edge) generator'
+    bl_options = {'REGISTER', 'UNDO'}
 
     # execute() is called by blender when running the operator.
     def execute(self, context):
@@ -271,18 +276,18 @@ class JBEAM_Scene(bpy.types.Panel):
         row.prop(scene.jbeam,"exp_diag")
 
 class Jbeam_SceneProps(bpy.types.PropertyGroup):
-    export_path = StringProperty(name="Export Path",description="Where all .jbeam will be saved", subtype='DIR_PATH')
-    export_format = EnumProperty(name="Export Format",items=( ('sel', "Selected", "Every selected object" ), ('.jbeam', "*.jbeam", "All mesh with the name *.jbeam" ) ),default='.jbeam')
-    listbn = bpy.props.BoolProperty(name = "List", description="Export has a list of beam and nodes\nElse export as a jbean file(json)", default = False)
-    exp_ef = bpy.props.BoolProperty(name = "Edge from face", description="Export edge from face", default = True)
-    exp_tricol = bpy.props.BoolProperty(name = "colision triangle", description="Export Faces to colision triangle", default = True)
-    exp_diag = bpy.props.BoolProperty(name = "Diagonal quad face", description="Edge on quad face (automatic diagonal)", default = True)
-    incompatible = bpy.props.BoolProperty(name = "Incompatible type", description="This type of object is not compatible with the exporter. Use mesh type please.", default = True)
+    export_path: bpy.props.StringProperty(name="Export Path",description="Where all .jbeam will be saved", subtype='DIR_PATH')
+    export_format: bpy.props.EnumProperty(name="Export Format",items=( ('sel', "Selected", "Every selected object" ), ('.jbeam', "*.jbeam", "All mesh with the name *.jbeam" ) ),default='.jbeam')
+    listbn: bpy.props.BoolProperty(name = "List", description="Export has a list of beam and nodes\nElse export as a jbean file(json)", default = False)
+    exp_ef: bpy.props.BoolProperty(name = "Edge from face", description="Export edge from face", default = True)
+    exp_tricol: bpy.props.BoolProperty(name = "colision triangle", description="Export Faces to colision triangle", default = True)
+    exp_diag: bpy.props.BoolProperty(name = "Diagonal quad face", description="Edge on quad face (automatic diagonal)", default = True)
+    incompatible: bpy.props.BoolProperty(name = "Incompatible type", description="This type of object is not compatible with the exporter. Use mesh type please.", default = True)
 
 class Jbeam_ObjProps(bpy.types.PropertyGroup):
-    name = StringProperty(name="Name",description="", default="")
-    slot = StringProperty(name="Slot of this jbeam",description="", default="main")
-    nodename = StringProperty(name="Prefix of nodes",description="", default="n")
+    name: bpy.props.StringProperty(name="Name",description="", default="")
+    slot: bpy.props.StringProperty(name="Slot of this jbeam",description="", default="main")
+    nodename: bpy.props.StringProperty(name="Prefix of nodes",description="", default="n")
 
 class JBEAM_Obj(bpy.types.Panel):
     bl_label = "JBeam parameter"
@@ -308,21 +313,34 @@ class JBEAM_Obj(bpy.types.Panel):
             row = l.row()
             row.prop(obj.jbeam,"nodename")
 
+
+classes = (
+    BeamGen,
+    IO_mesh_jbeam_ExporterChoice,
+    JbeamUpdated,
+    JbeamUpdater,
+    JBEAM_Scene,
+    Jbeam_SceneProps,
+    Jbeam_ObjProps,
+    JBEAM_Obj,
+    export_jbeam.ExportJbeam,
+)
+
 def register():
-    bpy.utils.register_module(__name__)
-    bpy.types.INFO_MT_file_export.append(menu_func_export)
-    #bpy.utils.register_class(BeamGen)
+    for c in classes:
+        bpy.utils.register_class(c)
+    bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
     def make_pointer(prop_type):
-        return PointerProperty(name="Jbeam settings",type=prop_type)
+        return bpy.props.PointerProperty(name="Jbeam settings",type=prop_type)
 
     bpy.types.Scene.jbeam = make_pointer(Jbeam_SceneProps)
     bpy.types.Mesh.jbeam = make_pointer(Jbeam_ObjProps)
 
 
 def unregister():
-    bpy.utils.unregister_module(__name__)
-    bpy.types.INFO_MT_file_export.remove(menu_func_export)
-    #bpy.utils.unregister_class(BeamGen)
+    for c in reversed(classes):
+        bpy.utils.unregister_class(c)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
     del bpy.types.Scene.jbeam
     del bpy.types.Mesh.jbeam
 
