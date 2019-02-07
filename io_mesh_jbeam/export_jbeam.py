@@ -17,7 +17,7 @@ class NGnode(object):
         self.x = x
         self.y = y
         self.z = z
-        
+
 
 
 class ExportJbeam(bpy.types.Operator):
@@ -27,64 +27,64 @@ class ExportJbeam(bpy.types.Operator):
     #bl_space_type = "PROPERTIES"
     #bl_region_type = "WINDOW"
     bl_label = 'Export Jbeam' + ' v.' + PrintVer()
-    
+
     # From ExportHelper. Filter filenames.
     filename_ext = ".jbeam"
     filter_glob = StringProperty(default="*.jbeam", options={'HIDDEN'})
- 
+
     filepath = bpy.props.StringProperty(
-        name="File Path", 
-        description="File path used for exporting the jbeam file", 
+        name="File Path",
+        description="File path used for exporting the jbeam file",
         maxlen= 1024, default= "")
-    
+
     listbn = bpy.props.BoolProperty(
         name = "Export has a list of beam and nodes",
         description="",
         default = False)
-    
+
     exp_ef = bpy.props.BoolProperty(
         name = "Export edge from face",
         description="",
         default = True)
-    
+
     exp_tricol = bpy.props.BoolProperty(
         name = "Export Faces to colision triangle",
         description="",
         default = True)
-    
+
     exp_diag = bpy.props.BoolProperty(
         name = "Edge on quad face",
         description="",
         default = True)
-    
+
     export_scene = bpy.props.BoolProperty(
         name="scene_export",
         description="exporter_prop_scene_tip",
         default=False,
         options={'HIDDEN'})
-    
+
     def invoke(self, context, event):
         #context.window_manager.fileselect_add(self)
         #return {'RUNNING_MODAL'}
         ops.wm.call_menu(name="IO_mesh_jbeam_ExporterChoice")
         return {'PASS_THROUGH'}
-    
+
     def execute(self, context, ):
         import sys
         file = None
-                                               
+
         scene = context.scene
-    
+
         # Save currently active object
         active = context.active_object
-        
+
         exportObjects = []
         if(self.export_scene):
             for obj in bpy.context.selectable_objects:
                 if (obj.type == 'MESH'):
                     if '.jbeam' in obj.name:
                         exportObjects.append(obj)
-        
+
         else:
             for o in context.selected_objects:
                 if (o.type == 'MESH'):
@@ -94,8 +94,9 @@ class ExportJbeam(bpy.types.Operator):
             '''self.report({'WARNING'}, 'WARNING : Must be select objects to export')
             print('CANCELLLED: Must be select objects to export')'''
             return {'CANCELLED'}
-        
+
         tempMesh = None
+        ob_new = None
         try:
             for objsel in exportObjects:
                 # Make the active object be the selected one
@@ -103,19 +104,19 @@ class ExportJbeam(bpy.types.Operator):
                 print(objsel.data.jbeam)
                 # Want to be in Object mode
                 bpy.ops.object.mode_set(mode='OBJECT')
-                    
+
                 #-------------------------------------
                 # Create a copy of the selected object
                 #-------------------------------------
-                
+
                 tempName = objsel.name + '.JBEAM_TEMP'
-                 
+
                 # Create new mesh
                 tempMesh = bpy.data.meshes.new(tempName)
-             
+
                 # Create new object associated with the mesh
                 ob_new = bpy.data.objects.new(tempName, tempMesh)
-             
+
                 # Copy data block from the old object into the new object
                 ob_new.data = objsel.data.copy()
                 ob_new.scale = objsel.scale
@@ -124,19 +125,19 @@ class ExportJbeam(bpy.types.Operator):
                 ob_new.rotation_euler = objsel.rotation_euler
                 ob_new.rotation_mode = objsel.rotation_mode
                 ob_new.rotation_quaternion = objsel.rotation_quaternion
-                
+
                 # Link new object to the given scene, select it, and
                 # make it active
                 scene.objects.link(ob_new)
                 ob_new.select = True
                 scene.objects.active = ob_new
-             
+
                 # Apply transforms
                 bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-    
+
                 # TODO: Can we copy modifiers from original object and then do this?
                 #mesh = ob_new.to_mesh(scene, True, 'PREVIEW')
-                
+
                 # Sort vertices
                 mesh = ob_new.data
                 nodes = []
@@ -147,17 +148,17 @@ class ExportJbeam(bpy.types.Operator):
                                   round(v.co[1] + objsel.delta_location[1], 3),
                                   round(v.co[2] + objsel.delta_location[2], 3))
                     nodes.append(node)
-    
+
                 sortedz = sorted(nodes, key=lambda NGnode: NGnode.z)
                 #sortedz is nodes sorted by Z axis
                 sortedx = sorted(sortedz, key=lambda NGnode: NGnode.x, reverse=True)
-                #sortedx is sortedz sorted by -X axis 
+                #sortedx is sortedz sorted by -X axis
                 sortedNodes = sorted(sortedx, key=lambda NGnode: NGnode.y)
                 #sortedNodes is sortedx sorted by Yaxis
                 #sortedNodes is nodes sorted by Z axis then -X axis then Y axis?
-                
-                
-                    
+
+
+
                 # Export
                 anewline = '\n'
                 #filename = objsel.name + '.jbeam'
@@ -166,25 +167,33 @@ class ExportJbeam(bpy.types.Operator):
                 else:
                     filename = objsel.name + '.jbeam'
                 print("File = " + str(self.filepath) + filename )
-                
+
                 if self.filepath == "":
                     if context.scene.jbeam.export_path =="":
                         self.report({'WARNING'}, 'WARNING : No export folder set. Go to Scene > JBeam Exporter. Export cancelled!')
+                        if ob_new:
+                            scene.objects.unlink(ob_new)
+                            bpy.data.objects.remove(ob_new)
                         return {'CANCELLED'}
                     if context.scene.jbeam.export_path.startswith("//") and not context.blend_data.filepath:
+                        if ob_new:
+                            scene.objects.unlink(ob_new)
+                            bpy.data.objects.remove(ob_new)
                         self.report({'ERROR'},"Save the .blend file first")
                         return {'CANCELLED'}
                     self.filepath = bpy.path.abspath(context.scene.jbeam.export_path)
-                
+
                 if not context.scene.jbeam.export_path.startswith("//"):
                     if not(os.path.isdir(self.filepath)):
-                        bpy.data.meshes.remove(tempMesh)
+                        if ob_new:
+                            scene.objects.unlink(ob_new)
+                            bpy.data.objects.remove(ob_new)
                         self.report({'WARNING'}, 'WARNING : Must be exported in a directory. Export cancelled!')
                         print('CANCELLLED: Must be exported in a directory. drectory = "'+self.filepath+'"')
                         return {'CANCELLED'}
                 file = open(self.filepath+filename, 'wt')
                 #file = open(self.filepath + '/' + filename, 'wt')
-                
+
                 if not(context.scene.jbeam.listbn):
                     if(bpy.context.user_preferences.system.author == ""):
                         author = 'Blender Jbeam' + ' v' + PrintVer()
@@ -196,7 +205,7 @@ class ExportJbeam(bpy.types.Operator):
                         name = objsel.name
                     file.write('{\n\t"%s":{\n\t\t"information":{\n\t\t\t"name":"%s",\n\t\t\t"authors":"%s"},\n\t\t"slotType":"%s",\n' % (name,objsel.data.jbeam.name,author,objsel.data.jbeam.slot))
                 mesh.update(True, True)  #http://www.blender.org/documentation/blender_python_api_2_69_7/bpy.types.Mesh.html?highlight=update#bpy.types.Mesh.update
-    
+
                 i = 0
                 file.write('//--Nodes--')
                 file.write(anewline)
@@ -215,8 +224,8 @@ class ExportJbeam(bpy.types.Operator):
                         v.nodeName = v.nodeName + ('%s' % (i))
                     file.write(v.nodeName)
                     file.write('\",')
-                    file.write('%s' % (round(v.x + objsel.delta_location[0], 3))) 
-                    file.write(',') 
+                    file.write('%s' % (round(v.x + objsel.delta_location[0], 3)))
+                    file.write(',')
                     file.write('%s' % (round(v.y + objsel.delta_location[1], 3)))
                     file.write(',')
                     file.write('%s' % (round(v.z + objsel.delta_location[2], 3)))
@@ -225,8 +234,8 @@ class ExportJbeam(bpy.types.Operator):
                     i += 1
                 if not(context.scene.jbeam.listbn):
                     file.write('\t\t\t],\n')
-                
-                
+
+
                 file.write('//--Beams--')
                 file.write(anewline)
                 if not(context.scene.jbeam.listbn):
@@ -237,13 +246,13 @@ class ExportJbeam(bpy.types.Operator):
                     else:
                         file.write('\t\t\t[\"')
                     nodeIndex1 = ([n.i for n in sortedNodes].index(e.vertices[0]))
-                    file.write('%s\"' % (sortedNodes[nodeIndex1].nodeName)) 
-                    file.write(',') 
+                    file.write('%s\"' % (sortedNodes[nodeIndex1].nodeName))
+                    file.write(',')
                     nodeIndex2 = ([n.i for n in sortedNodes].index(e.vertices[1]))
                     file.write('\"%s\"' % (sortedNodes[nodeIndex2].nodeName))
                     file.write('],')
                     file.write(anewline)
-                    
+
                 if context.scene.jbeam.exp_ef:
                     for f in mesh.tessfaces:
                         vs = f.vertices
@@ -283,10 +292,14 @@ class ExportJbeam(bpy.types.Operator):
                                     file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex4].nodeName))
                         else:
                             report({'ERROR'}, 'ERROR: Face %i isn\'t tri or quad.' % vs.index)
+                            if file: file.close()
+                            if ob_new:
+                                scene.objects.unlink(ob_new)
+                                bpy.data.objects.remove(ob_new)
                             return {'CANCELLED'}
                 if not(context.scene.jbeam.listbn):
                     file.write('\t\t\t],\n')
-                
+
                 if context.scene.jbeam.exp_tricol:
                     file.write('//--tri col--')
                     file.write(anewline)
@@ -307,6 +320,10 @@ class ExportJbeam(bpy.types.Operator):
                             file.write('["%s","%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
                         else:
                             self.report({'ERROR'}, 'ERROR: TriCol %i isn\'t tri' % vs.index)
+                            if file: file.close()
+                            if ob_new:
+                                scene.objects.unlink(ob_new)
+                                bpy.data.objects.remove(ob_new)
                             return {'CANCELLED'}
                     if not(context.scene.jbeam.listbn):
                         file.write('\t\t\t],\n')
@@ -314,36 +331,39 @@ class ExportJbeam(bpy.types.Operator):
                     file.write('\t}\n}')
                 file.flush()
                 file.close()
-    
+
                 # Deselect our new object
                 ob_new.select = False
-                
+
                 # Remove the new temp object
                 scene.objects.unlink(ob_new)
                 bpy.data.objects.remove(ob_new)
-                
+
                 if (mesh.users == 0):
                     mesh.user_clear()
-                    
+
                 bpy.data.meshes.remove(mesh)
-                
+
                 if (tempMesh.users == 0):
                     tempMesh.user_clear()
-                    
+
                 bpy.data.meshes.remove(tempMesh)
-            
+
             # Restore selection status
             '''for o in selectedObjects:
                 o.select = True'''
-                    
+
             # Restore active object
             scene.objects.active = active
-            
+
             return {'FINISHED'}
-            
+
         except Exception as e:
+            import traceback
+            traceback.print_exception(type(e), e, sys.exc_info()[2])
             self.report({'ERROR'}, 'ERROR: ' + str(e))
-            print('ERROR: ' + str(e))
             if file: file.close()
-            if tempMesh: bpy.data.meshes.remove(tempMesh)
+            if ob_new:
+                scene.objects.unlink(ob_new)
+                bpy.data.objects.remove(ob_new)
             return {'CANCELLED'}
