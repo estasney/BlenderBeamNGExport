@@ -30,7 +30,6 @@ bl_info = {
     "tracker_url": "https://github.com/50thomatoes50/BlenderBeamNGExport/issues",
     "warning": "Under construction!",
     "description": "Export nodes, beams and collision triangles for BeamNG.drive (.jbeam)",
-    # "category": "Object"
     "category": "Import-Export"
 }
 
