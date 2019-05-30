@@ -25,7 +25,7 @@ class ExportJbeam(bpy.types.Operator):
     bl_description = 'Export for use in BeamNG.drive (.jbeam)'
     # bl_space_type = "PROPERTIES"
     # bl_region_type = "WINDOW"
-    bl_label = 'Export Jbeam' + ' v.' + PrintVer()
+    bl_label = 'Export JBeam' + ' v.' + PrintVer()
 
     # From ExportHelper. Filter filenames.
     filename_ext = ".jbeam"
@@ -33,7 +33,7 @@ class ExportJbeam(bpy.types.Operator):
 
     filepath: bpy.props.StringProperty(
         name="File Path",
-        description="File path used for exporting the jbeam file",
+        description="File path used for exporting the JBeam file",
         maxlen=1024, default="")
 
     listbn: bpy.props.BoolProperty(
@@ -194,7 +194,7 @@ class ExportJbeam(bpy.types.Operator):
 
                 if not context.scene.jbeam.listbn:
                     # if(bpy.context.preferences.filepaths.author == "" and False):
-                    author = 'Blender Jbeam' + ' v' + PrintVer()
+                    author = 'Blender JBeam' + ' v' + PrintVer()
                     # else:
                     # author = bpy.context.preferences.filepaths.author + "," + 'Blender Jbeam' + ' v' + PrintVer()
                     if '.jbeam' in objsel.name:

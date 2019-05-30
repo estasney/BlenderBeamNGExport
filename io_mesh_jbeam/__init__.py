@@ -21,7 +21,7 @@
 # <pep8-80 compliant>
 
 bl_info = {
-    "name": "Export BeamNG.drive Jbeam format (.jbeam)",
+    "name": "Export BeamNG.drive JBeam format (.jbeam)",
     "author": "Mike Baker (rmikebaker), Thomas Portassau (50thomatoes50) & Julien Vanelian (Distrikt64/Juju)",
     "location": "File > Import-Export",
     "version": (0, 3, 0),
@@ -118,7 +118,7 @@ class BeamGen(bpy.types.Operator):
 
 
 class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
-    bl_label = 'Export Jbeam' + ' v.' + PrintVer()
+    bl_label = 'Export JBeam' + ' v.' + PrintVer()
 
     def draw(self, context):
 
@@ -177,7 +177,7 @@ def getscene():
 
 def menu_func_export(self, context):
     # self.layout.operator(ExportJbeam.bl_idname, text='Export Jbeam v.' + __version__ + ' (.jbeam)')
-    self.layout.menu("IO_mesh_jbeam_ExporterChoice", text='Export Jbeam v.' + PrintVer() + ' (.jbeam)')
+    self.layout.menu("IO_mesh_jbeam_ExporterChoice", text='Export JBeam v.' + PrintVer() + ' (.jbeam)')
 
 
 updater_supported = True
@@ -188,7 +188,7 @@ except:
 
 
 class JbeamUpdated(bpy.types.Menu):
-    bl_label = "Jbeam updated"
+    bl_label = "JBeam updated"
 
     def draw(self, context):
         self.layout.operator("wm.url_open", text="Change log available at Github",
@@ -197,15 +197,15 @@ class JbeamUpdated(bpy.types.Menu):
 
 class JbeamUpdater(bpy.types.Operator):
     bl_idname = "script.update_jbeam"
-    bl_label = "Jbeam updater"
-    bl_description = "updater for Jbeam addon."
+    bl_label = "JBeam updater"
+    bl_description = "updater for JBeam addon."
 
     @classmethod
     def poll(self, context):
         return updater_supported
 
     def execute(self, context):
-        print("Jbeam update...")
+        print("JBeam update...")
 
         import sys
         cur_version = sys.modules.get(__name__.split(".")[0]).bl_info['version']
@@ -307,7 +307,7 @@ class Jbeam_SceneProps(bpy.types.PropertyGroup):
 
 class Jbeam_ObjProps(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="Name", description="", default="")
-    slot: bpy.props.StringProperty(name="Slot of this jbeam", description="", default="main")
+    slot: bpy.props.StringProperty(name="Slot of this JBeam", description="", default="main")
     nodename: bpy.props.StringProperty(name="Prefix of nodes", description="", default="n")
 
 
