@@ -320,7 +320,7 @@ class JBEAM_Obj(bpy.types.Panel):
 
     def draw(self, context):
         l = self.layout
-        if (not (context.active_object.type == "MESH")):
+        if not context.active_object.type == "MESH":
             # print("Object not mesh")
             row = l.row()
             row.prop(context.scene.jbeam, "incompatible")

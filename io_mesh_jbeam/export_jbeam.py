@@ -78,15 +78,15 @@ class ExportJbeam(bpy.types.Operator):
         active = context.active_object
 
         exportObjects = []
-        if (self.export_scene):
+        if self.export_scene:
             for obj in bpy.context.selectable_objects:
-                if (obj.type == 'MESH'):
+                if obj.type == 'MESH':
                     if '.jbeam' in obj.name:
                         exportObjects.append(obj)
 
         else:
             for o in context.selected_objects:
-                if (o.type == 'MESH'):
+                if o.type == 'MESH':
                     # o.select = False
                     exportObjects.append(o)
         if len(exportObjects) == 0:
@@ -192,7 +192,7 @@ class ExportJbeam(bpy.types.Operator):
                 file = open(self.filepath + filename, 'wt')
                 # file = open(self.filepath + '/' + filename, 'wt')
 
-                if not (context.scene.jbeam.listbn):
+                if not context.scene.jbeam.listbn:
                     # if(bpy.context.preferences.filepaths.author == "" and False):
                     author = 'Blender Jbeam' + ' v' + PrintVer()
                     # else:
@@ -203,13 +203,13 @@ class ExportJbeam(bpy.types.Operator):
                         name = objsel.name
                     file.write(
                         '{\n\t"%s":{\n\t\t"information":{\n\t\t\t"name":"%s",\n\t\t\t"authors":"%s"},\n\t\t"slotType":"%s",\n' % (
-                        name, objsel.data.jbeam.name, author, objsel.data.jbeam.slot))
+                            name, objsel.data.jbeam.name, author, objsel.data.jbeam.slot))
                 mesh.update(calc_edges=True, calc_loop_triangles=True)
 
                 i = 0
                 file.write('//--Nodes--')
                 file.write(anewline)
-                if not (context.scene.jbeam.listbn):
+                if not context.scene.jbeam.listbn:
                     file.write('\t\t"nodes":[\n\t\t\t["id", "posX", "posY", "posZ"],\n')
                 for v in sortedNodes:
                     if context.scene.jbeam.listbn:
@@ -217,11 +217,11 @@ class ExportJbeam(bpy.types.Operator):
                     else:
                         file.write('\t\t\t[\"')
                     if v.x > 0:
-                        v.nodeName = v.nodeName + 'l' + ('%s' % (i))
+                        v.nodeName = v.nodeName + 'l' + ('%s' % i)
                     elif v.x < 0:
-                        v.nodeName = v.nodeName + 'r' + ('%s' % (i))
+                        v.nodeName = v.nodeName + 'r' + ('%s' % i)
                     else:
-                        v.nodeName = v.nodeName + ('%s' % (i))
+                        v.nodeName = v.nodeName + ('%s' % i)
                     file.write(v.nodeName)
                     file.write('\",')
                     file.write('%s' % (round(v.x + objsel.delta_location[0], 3)))
@@ -232,12 +232,12 @@ class ExportJbeam(bpy.types.Operator):
                     file.write('],')
                     file.write(anewline)
                     i += 1
-                if not (context.scene.jbeam.listbn):
+                if not context.scene.jbeam.listbn:
                     file.write('\t\t\t],\n')
 
                 file.write('//--Beams--')
                 file.write(anewline)
-                if not (context.scene.jbeam.listbn):
+                if not context.scene.jbeam.listbn:
                     file.write('\t\t"beams":[\n\t\t\t["id1:", "id2:"],\n')
                 for e in mesh.edges:
                     if context.scene.jbeam.listbn:
@@ -245,10 +245,10 @@ class ExportJbeam(bpy.types.Operator):
                     else:
                         file.write('\t\t\t[\"')
                     nodeIndex1 = ([n.i for n in sortedNodes].index(e.vertices[0]))
-                    file.write('%s\"' % (sortedNodes[nodeIndex1].nodeName))
+                    file.write('%s\"' % sortedNodes[nodeIndex1].nodeName)
                     file.write(',')
                     nodeIndex2 = ([n.i for n in sortedNodes].index(e.vertices[1]))
-                    file.write('\"%s\"' % (sortedNodes[nodeIndex2].nodeName))
+                    file.write('\"%s\"' % sortedNodes[nodeIndex2].nodeName)
                     file.write('],')
                     file.write(anewline)
 
@@ -263,16 +263,16 @@ class ExportJbeam(bpy.types.Operator):
                                 file.write('["%s","%s"],\n' % (
                                 sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
                                 file.write('["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                    sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
                                 file.write('["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex1].nodeName))
+                                    sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex1].nodeName))
                             else:
                                 file.write('\t\t\t["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                                    sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
                                 file.write('\t\t\t["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                    sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
                                 file.write('\t\t\t["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex1].nodeName))
+                                    sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex1].nodeName))
                         elif len(vs) == 4:
                             nodeIndex1 = ([n.i for n in sortedNodes].index(vs[0]))
                             nodeIndex2 = ([n.i for n in sortedNodes].index(vs[1]))
@@ -280,33 +280,33 @@ class ExportJbeam(bpy.types.Operator):
                             nodeIndex4 = ([n.i for n in sortedNodes].index(vs[3]))
                             if context.scene.jbeam.listbn:
                                 file.write('["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                                    sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
                                 file.write('["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                    sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
                                 file.write('["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
+                                    sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
                                 file.write('["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
+                                    sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
                             else:
                                 file.write('\t\t\t["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                                    sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
                                 file.write('\t\t\t["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                    sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
                                 file.write('\t\t\t["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
+                                    sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
                                 file.write('\t\t\t["%s","%s"],\n' % (
-                                sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
+                                    sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
                             if context.scene.jbeam.exp_diag:
                                 if self.listbn:
                                     file.write('["%s","%s"],\n' % (
-                                    sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                        sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex3].nodeName))
                                     file.write('["%s","%s"],\n' % (
-                                    sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex4].nodeName))
+                                        sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex4].nodeName))
                                 else:
                                     file.write('\t\t\t["%s","%s"],\n' % (
-                                    sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                        sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex3].nodeName))
                                     file.write('\t\t\t["%s","%s"],\n' % (
-                                    sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex4].nodeName))
+                                        sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex4].nodeName))
                         else:
                             report({'ERROR'}, 'ERROR: Face %i isn\'t tri or quad.' % vs.index)
                             if file: file.close()
@@ -314,7 +314,7 @@ class ExportJbeam(bpy.types.Operator):
                                 scene.objects.unlink(ob_new)
                                 bpy.data.objects.remove(ob_new)
                             return {'CANCELLED'}
-                if not (context.scene.jbeam.listbn):
+                if not context.scene.jbeam.listbn:
                     file.write('\t\t\t],\n')
 
                 if context.scene.jbeam.exp_tricol:
@@ -322,21 +322,21 @@ class ExportJbeam(bpy.types.Operator):
                     file.write(anewline)
                     ob_new.modifiers.new("tricol", "TRIANGULATE")
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier="tricol")
-                    if not (context.scene.jbeam.listbn):
+                    if not context.scene.jbeam.listbn:
                         file.write('\t\t"triangles":[\n\t\t\t["id1:", "id2:", "id3:"],\n')
                     mesh = ob_new.data
                     mesh.update(calc_edges=True, calc_loop_triangles=True)
                     for f in mesh.polygons:
                         vs = f.vertices
                         if len(vs) == 3:
-                            if not (context.scene.jbeam.listbn):
+                            if not context.scene.jbeam.listbn:
                                 file.write('\t\t\t')
                             nodeIndex1 = ([n.i for n in sortedNodes].index(vs[0]))
                             nodeIndex2 = ([n.i for n in sortedNodes].index(vs[1]))
                             nodeIndex3 = ([n.i for n in sortedNodes].index(vs[2]))
                             file.write('["%s","%s","%s"],\n' % (
-                            sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName,
-                            sortedNodes[nodeIndex3].nodeName))
+                                sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName,
+                                sortedNodes[nodeIndex3].nodeName))
                         else:
                             self.report({'ERROR'}, 'ERROR: TriCol %i isn\'t tri' % vs.index)
                             if file: file.close()
@@ -344,9 +344,9 @@ class ExportJbeam(bpy.types.Operator):
                                 scene.objects.unlink(ob_new)
                                 bpy.data.objects.remove(ob_new)
                             return {'CANCELLED'}
-                    if not (context.scene.jbeam.listbn):
+                    if not context.scene.jbeam.listbn:
                         file.write('\t\t\t],\n')
-                if not (context.scene.jbeam.listbn):
+                if not context.scene.jbeam.listbn:
                     file.write('\t}\n}')
                 file.flush()
                 file.close()
@@ -358,12 +358,12 @@ class ExportJbeam(bpy.types.Operator):
                 scene.objects.unlink(ob_new)
                 bpy.data.objects.remove(ob_new)
 
-                if (mesh.users == 0):
+                if mesh.users == 0:
                     mesh.user_clear()
 
                 bpy.data.meshes.remove(mesh)
 
-                if (tempMesh.users == 0):
+                if tempMesh.users == 0:
                     tempMesh.user_clear()
 
                 bpy.data.meshes.remove(tempMesh)
