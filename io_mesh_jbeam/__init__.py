@@ -307,8 +307,8 @@ class Jbeam_SceneProps(bpy.types.PropertyGroup):
 
 class Jbeam_ObjProps(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="Name", description="", default="")
-    slot: bpy.props.StringProperty(name="Slot of this JBeam", description="", default="main")
-    nodename: bpy.props.StringProperty(name="Prefix of nodes", description="", default="n")
+    slot: bpy.props.StringProperty(name="JBeam Slot", description="", default="main")
+    nodename: bpy.props.StringProperty(name="Nodes Prefix", description="", default="n")
 
 
 class JBEAM_Obj(bpy.types.Panel):
