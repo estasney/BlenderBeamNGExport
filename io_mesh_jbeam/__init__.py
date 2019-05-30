@@ -168,7 +168,7 @@ class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
 def getscene():
     num = 0
     for obj in bpy.context.selectable_objects:
-        if (obj.type == 'MESH'):
+        if obj.type == 'MESH':
             if '.jbeam' in obj.name:
                 num += 1
     return num
