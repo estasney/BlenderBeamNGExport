@@ -10,6 +10,7 @@ from bpy.props import (BoolProperty,
 
 from .tools import *
 
+
 class NGnode(object):
     def __init__(self, i, nodeName, x, y, z):
         self.i = i
@@ -19,13 +20,12 @@ class NGnode(object):
         self.z = z
 
 
-
 class ExportJbeam(bpy.types.Operator):
     """Export Nodes and Beams to .jbeam file for BeamNG"""
     bl_idname = 'export_mesh.jbeam'
     bl_description = 'Export for use in BeamNG (.jbeam)'
-    #bl_space_type = "PROPERTIES"
-    #bl_region_type = "WINDOW"
+    # bl_space_type = "PROPERTIES"
+    # bl_region_type = "WINDOW"
     bl_label = 'Export Jbeam' + ' v.' + PrintVer()
 
     # From ExportHelper. Filter filenames.
@@ -35,27 +35,27 @@ class ExportJbeam(bpy.types.Operator):
     filepath: bpy.props.StringProperty(
         name="File Path",
         description="File path used for exporting the jbeam file",
-        maxlen= 1024, default= "")
+        maxlen=1024, default="")
 
     listbn: bpy.props.BoolProperty(
-        name = "Export has a list of beam and nodes",
+        name="Export has a list of beam and nodes",
         description="",
-        default = False)
+        default=False)
 
     exp_ef: bpy.props.BoolProperty(
-        name = "Export edge from face",
+        name="Export edge from face",
         description="",
-        default = True)
+        default=True)
 
     exp_tricol: bpy.props.BoolProperty(
-        name = "Export Faces to colision triangle",
+        name="Export Faces to colision triangle",
         description="",
-        default = True)
+        default=True)
 
     exp_diag: bpy.props.BoolProperty(
-        name = "Edge on quad face",
+        name="Edge on quad face",
         description="",
-        default = True)
+        default=True)
 
     export_scene: bpy.props.BoolProperty(
         name="scene_export",
@@ -64,8 +64,8 @@ class ExportJbeam(bpy.types.Operator):
         options={'HIDDEN'})
 
     def invoke(self, context, event):
-        #context.window_manager.fileselect_add(self)
-        #return {'RUNNING_MODAL'}
+        # context.window_manager.fileselect_add(self)
+        # return {'RUNNING_MODAL'}
         ops.wm.call_menu(name="IO_mesh_jbeam_ExporterChoice")
         return {'PASS_THROUGH'}
 
@@ -79,7 +79,7 @@ class ExportJbeam(bpy.types.Operator):
         active = context.active_object
 
         exportObjects = []
-        if(self.export_scene):
+        if (self.export_scene):
             for obj in bpy.context.selectable_objects:
                 if (obj.type == 'MESH'):
                     if '.jbeam' in obj.name:
@@ -88,7 +88,7 @@ class ExportJbeam(bpy.types.Operator):
         else:
             for o in context.selected_objects:
                 if (o.type == 'MESH'):
-                    #o.select = False
+                    # o.select = False
                     exportObjects.append(o)
         if len(exportObjects) == 0:
             '''self.report({'WARNING'}, 'WARNING : Must be select objects to export')
@@ -105,9 +105,9 @@ class ExportJbeam(bpy.types.Operator):
                 # Want to be in Object mode
                 bpy.ops.object.mode_set(mode='OBJECT')
 
-                #-------------------------------------
+                # -------------------------------------
                 # Create a copy of the selected object
-                #-------------------------------------
+                # -------------------------------------
 
                 tempName = objsel.name + '.JBEAM_TEMP'
 
@@ -136,7 +136,7 @@ class ExportJbeam(bpy.types.Operator):
                 bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
                 # TODO: Can we copy modifiers from original object and then do this?
-                #mesh = ob_new.to_mesh(scene, True, 'PREVIEW')
+                # mesh = ob_new.to_mesh(scene, True, 'PREVIEW')
 
                 # Sort vertices
                 mesh = ob_new.data
@@ -150,27 +150,26 @@ class ExportJbeam(bpy.types.Operator):
                     nodes.append(node)
 
                 sortedz = sorted(nodes, key=lambda NGnode: NGnode.z)
-                #sortedz is nodes sorted by Z axis
+                # sortedz is nodes sorted by Z axis
                 sortedx = sorted(sortedz, key=lambda NGnode: NGnode.x, reverse=True)
-                #sortedx is sortedz sorted by -X axis
+                # sortedx is sortedz sorted by -X axis
                 sortedNodes = sorted(sortedx, key=lambda NGnode: NGnode.y)
-                #sortedNodes is sortedx sorted by Yaxis
-                #sortedNodes is nodes sorted by Z axis then -X axis then Y axis?
-
-
+                # sortedNodes is sortedx sorted by Yaxis
+                # sortedNodes is nodes sorted by Z axis then -X axis then Y axis?
 
                 # Export
                 anewline = '\n'
-                #filename = objsel.name + '.jbeam'
+                # filename = objsel.name + '.jbeam'
                 if '.jbeam' in objsel.name:
                     filename = objsel.name
                 else:
                     filename = objsel.name + '.jbeam'
-                print("File = " + str(self.filepath) + filename )
+                print("File = " + str(self.filepath) + filename)
 
                 if self.filepath == "":
-                    if context.scene.jbeam.export_path =="":
-                        self.report({'WARNING'}, 'WARNING : No export folder set. Go to Scene > JBeam Exporter. Export cancelled!')
+                    if context.scene.jbeam.export_path == "":
+                        self.report({'WARNING'},
+                                    'WARNING : No export folder set. Go to Scene > JBeam Exporter. Export cancelled!')
                         if ob_new:
                             scene.objects.unlink(ob_new)
                             bpy.data.objects.remove(ob_new)
@@ -179,37 +178,39 @@ class ExportJbeam(bpy.types.Operator):
                         if ob_new:
                             scene.objects.unlink(ob_new)
                             bpy.data.objects.remove(ob_new)
-                        self.report({'ERROR'},"Save the .blend file first")
+                        self.report({'ERROR'}, "Save the .blend file first")
                         return {'CANCELLED'}
                     self.filepath = bpy.path.abspath(context.scene.jbeam.export_path)
 
                 if not context.scene.jbeam.export_path.startswith("//"):
-                    if not(os.path.isdir(self.filepath)):
+                    if not (os.path.isdir(self.filepath)):
                         if ob_new:
                             scene.objects.unlink(ob_new)
                             bpy.data.objects.remove(ob_new)
                         self.report({'WARNING'}, 'WARNING : Must be exported in a directory. Export cancelled!')
-                        print('CANCELLLED: Must be exported in a directory. drectory = "'+self.filepath+'"')
+                        print('CANCELLLED: Must be exported in a directory. drectory = "' + self.filepath + '"')
                         return {'CANCELLED'}
-                file = open(self.filepath+filename, 'wt')
-                #file = open(self.filepath + '/' + filename, 'wt')
+                file = open(self.filepath + filename, 'wt')
+                # file = open(self.filepath + '/' + filename, 'wt')
 
-                if not(context.scene.jbeam.listbn):
-                    #if(bpy.context.preferences.filepaths.author == "" and False):
+                if not (context.scene.jbeam.listbn):
+                    # if(bpy.context.preferences.filepaths.author == "" and False):
                     author = 'Blender Jbeam' + ' v' + PrintVer()
-                    #else:
-                        #author = bpy.context.preferences.filepaths.author + "," + 'Blender Jbeam' + ' v' + PrintVer()
+                    # else:
+                    # author = bpy.context.preferences.filepaths.author + "," + 'Blender Jbeam' + ' v' + PrintVer()
                     if '.jbeam' in objsel.name:
-                        name = objsel.name[0:len(objsel.name)-6]
+                        name = objsel.name[0:len(objsel.name) - 6]
                     else:
                         name = objsel.name
-                    file.write('{\n\t"%s":{\n\t\t"information":{\n\t\t\t"name":"%s",\n\t\t\t"authors":"%s"},\n\t\t"slotType":"%s",\n' % (name,objsel.data.jbeam.name,author,objsel.data.jbeam.slot))
+                    file.write(
+                        '{\n\t"%s":{\n\t\t"information":{\n\t\t\t"name":"%s",\n\t\t\t"authors":"%s"},\n\t\t"slotType":"%s",\n' % (
+                        name, objsel.data.jbeam.name, author, objsel.data.jbeam.slot))
                 mesh.update(calc_edges=True, calc_loop_triangles=True)
 
                 i = 0
                 file.write('//--Nodes--')
                 file.write(anewline)
-                if not(context.scene.jbeam.listbn):
+                if not (context.scene.jbeam.listbn):
                     file.write('\t\t"nodes":[\n\t\t\t["id", "posX", "posY", "posZ"],\n')
                 for v in sortedNodes:
                     if context.scene.jbeam.listbn:
@@ -232,13 +233,12 @@ class ExportJbeam(bpy.types.Operator):
                     file.write('],')
                     file.write(anewline)
                     i += 1
-                if not(context.scene.jbeam.listbn):
+                if not (context.scene.jbeam.listbn):
                     file.write('\t\t\t],\n')
-
 
                 file.write('//--Beams--')
                 file.write(anewline)
-                if not(context.scene.jbeam.listbn):
+                if not (context.scene.jbeam.listbn):
                     file.write('\t\t"beams":[\n\t\t\t["id1:", "id2:"],\n')
                 for e in mesh.edges:
                     if context.scene.jbeam.listbn:
@@ -261,35 +261,53 @@ class ExportJbeam(bpy.types.Operator):
                             nodeIndex2 = ([n.i for n in sortedNodes].index(vs[1]))
                             nodeIndex3 = ([n.i for n in sortedNodes].index(vs[2]))
                             if context.scene.jbeam.listbn:
-                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
-                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
-                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex1].nodeName))
+                                file.write('["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                                file.write('["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                file.write('["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex1].nodeName))
                             else:
-                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
-                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
-                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex1].nodeName))
+                                file.write('\t\t\t["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                                file.write('\t\t\t["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                file.write('\t\t\t["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex1].nodeName))
                         elif len(vs) == 4:
                             nodeIndex1 = ([n.i for n in sortedNodes].index(vs[0]))
                             nodeIndex2 = ([n.i for n in sortedNodes].index(vs[1]))
                             nodeIndex3 = ([n.i for n in sortedNodes].index(vs[2]))
                             nodeIndex4 = ([n.i for n in sortedNodes].index(vs[3]))
                             if context.scene.jbeam.listbn:
-                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
-                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
-                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
-                                file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
+                                file.write('["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                                file.write('["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                file.write('["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
+                                file.write('["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
                             else:
-                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
-                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
-                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
-                                file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
+                                file.write('\t\t\t["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName))
+                                file.write('\t\t\t["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                file.write('\t\t\t["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex3].nodeName, sortedNodes[nodeIndex4].nodeName))
+                                file.write('\t\t\t["%s","%s"],\n' % (
+                                sortedNodes[nodeIndex4].nodeName, sortedNodes[nodeIndex1].nodeName))
                             if context.scene.jbeam.exp_diag:
                                 if self.listbn:
-                                    file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex3].nodeName))
-                                    file.write('["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex4].nodeName))
+                                    file.write('["%s","%s"],\n' % (
+                                    sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                    file.write('["%s","%s"],\n' % (
+                                    sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex4].nodeName))
                                 else:
-                                    file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex3].nodeName))
-                                    file.write('\t\t\t["%s","%s"],\n' % (sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex4].nodeName))
+                                    file.write('\t\t\t["%s","%s"],\n' % (
+                                    sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex3].nodeName))
+                                    file.write('\t\t\t["%s","%s"],\n' % (
+                                    sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex4].nodeName))
                         else:
                             report({'ERROR'}, 'ERROR: Face %i isn\'t tri or quad.' % vs.index)
                             if file: file.close()
@@ -297,27 +315,29 @@ class ExportJbeam(bpy.types.Operator):
                                 scene.objects.unlink(ob_new)
                                 bpy.data.objects.remove(ob_new)
                             return {'CANCELLED'}
-                if not(context.scene.jbeam.listbn):
+                if not (context.scene.jbeam.listbn):
                     file.write('\t\t\t],\n')
 
                 if context.scene.jbeam.exp_tricol:
                     file.write('//--tri col--')
                     file.write(anewline)
-                    ob_new.modifiers.new("tricol","TRIANGULATE")
+                    ob_new.modifiers.new("tricol", "TRIANGULATE")
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier="tricol")
-                    if not(context.scene.jbeam.listbn):
+                    if not (context.scene.jbeam.listbn):
                         file.write('\t\t"triangles":[\n\t\t\t["id1:", "id2:", "id3:"],\n')
                     mesh = ob_new.data
                     mesh.update(calc_edges=True, calc_loop_triangles=True)
                     for f in mesh.polygons:
                         vs = f.vertices
                         if len(vs) == 3:
-                            if not(context.scene.jbeam.listbn):
+                            if not (context.scene.jbeam.listbn):
                                 file.write('\t\t\t')
                             nodeIndex1 = ([n.i for n in sortedNodes].index(vs[0]))
                             nodeIndex2 = ([n.i for n in sortedNodes].index(vs[1]))
                             nodeIndex3 = ([n.i for n in sortedNodes].index(vs[2]))
-                            file.write('["%s","%s","%s"],\n' % (sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName, sortedNodes[nodeIndex3].nodeName))
+                            file.write('["%s","%s","%s"],\n' % (
+                            sortedNodes[nodeIndex1].nodeName, sortedNodes[nodeIndex2].nodeName,
+                            sortedNodes[nodeIndex3].nodeName))
                         else:
                             self.report({'ERROR'}, 'ERROR: TriCol %i isn\'t tri' % vs.index)
                             if file: file.close()
@@ -325,9 +345,9 @@ class ExportJbeam(bpy.types.Operator):
                                 scene.objects.unlink(ob_new)
                                 bpy.data.objects.remove(ob_new)
                             return {'CANCELLED'}
-                    if not(context.scene.jbeam.listbn):
+                    if not (context.scene.jbeam.listbn):
                         file.write('\t\t\t],\n')
-                if not(context.scene.jbeam.listbn):
+                if not (context.scene.jbeam.listbn):
                     file.write('\t}\n}')
                 file.flush()
                 file.close()
