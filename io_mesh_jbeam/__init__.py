@@ -22,14 +22,14 @@
 
 bl_info = {
     "name": "Export Jbeam (.jbeam)",
-    "author": "Mike Baker (rmikebaker) & Thomas Portassau (50thomatoes50)",
+    "author": "Mike Baker (rmikebaker), Thomas Portassau (50thomatoes50) & Julien Vanelian (Distrikt64/Juju)",
     "location": "File > Import-Export",
     "version": (0, 3, 0),
     "blender": (2, 80, 0),
     "wiki_url": 'http://wiki.beamng.com/Blender_Exporter_plugin',
     "tracker_url": "https://github.com/50thomatoes50/BlenderBeamNGExport/issues",
     "warning": "Under construction!",
-    "description": "Export Nodes,Beams and Colision for BeamNG (.jbeam)",
+    "description": "Export nodes, beams and collision triangles for BeamNG.drive (.jbeam)",
     # "category": "Object"
     "category": "Import-Export"
 }
@@ -75,8 +75,8 @@ class BeamGen(bpy.types.Operator):
         # active = context.active_object
         active = context.edit_object
         if active is None:
-            self.report({'WARNING'}, 'WARNING : Not in edit mode! Operation cancelled!')
-            print('CANCELLLED: Not in edit mode')
+            self.report({'WARNING'}, 'WARNING : Currently not in edit mode! Operation cancelled!')
+            print('CANCELLED: Not in edit mode')
             return {'CANCELLED'}
 
         print("obj:" + active.name)
@@ -92,7 +92,7 @@ class BeamGen(bpy.types.Operator):
         nb_point = len(nodes)
         print("nb_point:" + str(nb_point))
         if nb_point <= 1:
-            self.report({'ERROR'}, 'ERROR: Select more than 1 point')
+            self.report({'ERROR'}, 'ERROR: Select more than 1 vertex')
 
         origin = len(active.data.edges) - 1
         i = 0
@@ -148,7 +148,7 @@ class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
             # print(num_obs)
             if num_obs > 1:
                 group_layout.operator(export_jbeam.ExportJbeam.bl_idname,
-                                      text="Export slected objects (" + str(num_obs) + ")", icon='OBJECT_DATA')
+                                      text="Export selected objects (" + str(num_obs) + ")", icon='OBJECT_DATA')
             elif num_obs:
                 group_layout.operator(export_jbeam.ExportJbeam.bl_idname, text=single_obs[0].name, icon='MESH_DATA')
         elif len(bpy.context.selected_objects):
@@ -286,18 +286,18 @@ class JBEAM_Scene(bpy.types.Panel):
 
 
 class Jbeam_SceneProps(bpy.types.PropertyGroup):
-    export_path: bpy.props.StringProperty(name="Export Path", description="Where all .jbeam will be saved",
+    export_path: bpy.props.StringProperty(name="Export Path", description="Where all the .jbeam files will be saved",
                                           subtype='DIR_PATH')
     export_format: bpy.props.EnumProperty(name="Export Format", items=(
     ('sel', "Selected", "Every selected object"), ('.jbeam', "*.jbeam", "All mesh with the name *.jbeam")),
                                           default='.jbeam')
     listbn: bpy.props.BoolProperty(name="List",
-                                   description="Export has a list of beam and nodes\nElse export as a jbean file(json)",
+                                   description="Export has a list of nodes and beams\nElse export as a jbean file(json)",
                                    default=False)
-    exp_ef: bpy.props.BoolProperty(name="Edge from face", description="Export edge from face", default=True)
-    exp_tricol: bpy.props.BoolProperty(name="colision triangle", description="Export Faces to colision triangle",
+    exp_ef: bpy.props.BoolProperty(name="Edge from face", description="Export edges from faces", default=True)
+    exp_tricol: bpy.props.BoolProperty(name="colision triangle", description="Export faces to collision triangles",
                                        default=True)
-    exp_diag: bpy.props.BoolProperty(name="Diagonal quad face", description="Edge on quad face (automatic diagonal)",
+    exp_diag: bpy.props.BoolProperty(name="Diagonal quad face", description="Edge on quad face (automatic diagonals)",
                                      default=True)
     incompatible: bpy.props.BoolProperty(name="Incompatible type",
                                          description="This type of object is not compatible with the exporter. Use mesh type please.",
