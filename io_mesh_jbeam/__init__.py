@@ -21,13 +21,13 @@
 # <pep8-80 compliant>
 
 bl_info = {
-    "name": "Export Jbeam (.jbeam)",
+    "name": "Export BeamNG.drive Jbeam format (.jbeam)",
     "author": "Mike Baker (rmikebaker), Thomas Portassau (50thomatoes50) & Julien Vanelian (Distrikt64/Juju)",
     "location": "File > Import-Export",
     "version": (0, 3, 0),
     "blender": (2, 80, 0),
     "wiki_url": 'http://wiki.beamng.com/Blender_Exporter_plugin',
-    "tracker_url": "https://github.com/50thomatoes50/BlenderBeamNGExport/issues",
+    "tracker_url": "https://github.com/Distrikt64/BlenderBeamNGExport/issues",
     "warning": "Under construction!",
     "description": "Export nodes, beams and collision triangles for BeamNG.drive (.jbeam)",
     # "category": "Object"
@@ -75,7 +75,7 @@ class BeamGen(bpy.types.Operator):
         # active = context.active_object
         active = context.edit_object
         if active is None:
-            self.report({'WARNING'}, 'WARNING : Currently not in edit mode! Operation cancelled!')
+            self.report({'ERROR'}, 'ERROR : Currently not in edit mode! Operation cancelled!')
             print('CANCELLED: Not in edit mode')
             return {'CANCELLED'}
 
@@ -93,12 +93,13 @@ class BeamGen(bpy.types.Operator):
         print("nb_point:" + str(nb_point))
         if nb_point <= 1:
             self.report({'ERROR'}, 'ERROR: Select more than 1 vertex')
+            return {'CANCELLED'}
 
         origin = len(active.data.edges) - 1
         i = 0
         nb_edge = 0
         j = nb_point
-        while (j != 0):
+        while j != 0:
             j -= 1
             nb_edge += (nb_point - (nb_point - j))
         active.data.edges.add(nb_edge)
@@ -289,15 +290,15 @@ class Jbeam_SceneProps(bpy.types.PropertyGroup):
     export_path: bpy.props.StringProperty(name="Export Path", description="Where all the .jbeam files will be saved",
                                           subtype='DIR_PATH')
     export_format: bpy.props.EnumProperty(name="Export Format", items=(
-    ('sel', "Selected", "Every selected object"), ('.jbeam', "*.jbeam", "All mesh with the name *.jbeam")),
+        ('sel', "Selected", "Every selected object"), ('.jbeam', "*.jbeam", "All meshes with the name *.jbeam")),
                                           default='.jbeam')
     listbn: bpy.props.BoolProperty(name="List",
                                    description="Export has a list of nodes and beams\nElse export as a jbean file(json)",
                                    default=False)
-    exp_ef: bpy.props.BoolProperty(name="Edge from face", description="Export edges from faces", default=True)
-    exp_tricol: bpy.props.BoolProperty(name="colision triangle", description="Export faces to collision triangles",
+    exp_ef: bpy.props.BoolProperty(name="Edges From Faces", description="Export edges from faces", default=True)
+    exp_tricol: bpy.props.BoolProperty(name="Collision Triangles", description="Export faces to collision triangles",
                                        default=True)
-    exp_diag: bpy.props.BoolProperty(name="Diagonal quad face", description="Edge on quad face (automatic diagonals)",
+    exp_diag: bpy.props.BoolProperty(name="Diagonal Quad Faces", description="Edge on quad face (automatic diagonals)",
                                      default=True)
     incompatible: bpy.props.BoolProperty(name="Incompatible type",
                                          description="This type of object is not compatible with the exporter. Use mesh type please.",

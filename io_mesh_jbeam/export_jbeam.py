@@ -21,9 +21,8 @@ class NGnode(object):
 
 
 class ExportJbeam(bpy.types.Operator):
-    """Export Nodes and Beams to .jbeam file for BeamNG"""
     bl_idname = 'export_mesh.jbeam'
-    bl_description = 'Export for use in BeamNG (.jbeam)'
+    bl_description = 'Export for use in BeamNG.drive (.jbeam)'
     # bl_space_type = "PROPERTIES"
     # bl_region_type = "WINDOW"
     bl_label = 'Export Jbeam' + ' v.' + PrintVer()
