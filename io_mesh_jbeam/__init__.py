@@ -72,43 +72,43 @@ class BeamGen(bpy.types.Operator):
 
         # Save currently active object
         # active = context.active_object
-        active = context.edit_object
-        if active is None:
+        active_object = context.edit_object
+        if active_object is None:
             self.report({'ERROR'}, 'ERROR : Currently not in edit mode! Operation cancelled!')
             print('CANCELLED: Not in edit mode')
             return {'CANCELLED'}
 
-        print("obj:" + active.name)
-        nodes = []
+        print("obj:" + active_object.name)
+        vertices = []
         edge_tmp = []
 
         bpy.ops.object.mode_set(mode='OBJECT')
 
-        for v in active.data.vertices:
-            if v.select:
-                nodes.append(v.index)
+        for vertex in active_object.data.vertices:
+            if vertex.select:
+                vertices.append(vertex.index)
 
-        nb_point = len(nodes)
-        print("nb_point:" + str(nb_point))
-        if nb_point <= 1:
+        vertex_count = len(vertices)
+        print("node_count:" + str(vertex_count))
+        if vertex_count <= 1:
             self.report({'ERROR'}, 'ERROR: Select more than 1 vertex')
             return {'CANCELLED'}
 
-        origin = len(active.data.edges) - 1
+        origin = len(active_object.data.edges) - 1
         i = 0
-        nb_edge = 0
-        j = nb_point
+        edge_count = 0
+        j = vertex_count
         while j != 0:
             j -= 1
-            nb_edge += (nb_point - (nb_point - j))
-        active.data.edges.add(nb_edge)
+            edge_count += (vertex_count - (vertex_count - j))
+        active_object.data.edges.add(edge_count)
 
-        for n1 in nodes:
-            for n2 in nodes:
+        for n1 in vertices:
+            for n2 in vertices:
                 if n1 != n2 and n2 > n1:
                     i += 1
-                    active.data.edges[origin + i].vertices[0] = n1
-                    active.data.edges[origin + i].vertices[1] = n2
+                    active_object.data.edges[origin + i].vertices[0] = n1
+                    active_object.data.edges[origin + i].vertices[1] = n2
 
         bpy.ops.object.mode_set(mode='EDIT')
 
@@ -121,16 +121,16 @@ class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
 
     def draw(self, context):
 
-        l = self.layout
-        l.operator_context = 'EXEC_DEFAULT'
+        layout = self.layout
+        layout.operator_context = 'EXEC_DEFAULT'
 
-        exportables = context.selected_objects
-        if len(exportables):
+        selected_objects = context.selected_objects
+        if len(selected_objects):
             single_obs = []
             # print(exportables)
-            for s in exportables:
-                if s.type == 'MESH':
-                    single_obs.append(s)
+            for selected_object in selected_objects:
+                if selected_object.type == 'MESH':
+                    single_obs.append(selected_object)
             '''groups = list([ex for ex in exportables if ex.ob_type == 'GROUP'])
             groups.sort(key=lambda g: g.name.lower())
 
@@ -140,23 +140,23 @@ class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
                     if i == 0: group_col = l.column(align=True)
                     if i % 2 == 0: group_layout = group_col.row(align=True)
                 group_layout.operator(SmdExporter.bl_idname, text=group.name, icon='GROUP').group = group.get_id().name'''
-            group_col = l.column(align=True)
+            group_col = layout.column(align=True)
             group_layout = group_col.row(align=True)
             # group_layout.operator(ExportJbeam.bl_idname, text="group.name", icon='GROUP')
-            num_obs = len(single_obs)
+            selected_object_count = len(single_obs)
             # print(single_obs)
             # print(num_obs)
-            if num_obs > 1:
+            if selected_object_count > 1:
                 group_layout.operator(export_jbeam.ExportJbeam.bl_idname,
-                                      text="Export selected objects (" + str(num_obs) + ")", icon='OBJECT_DATA')
-            elif num_obs:
+                                      text="Export selected objects (" + str(selected_object_count) + ")", icon='OBJECT_DATA')
+            elif selected_object_count:
                 group_layout.operator(export_jbeam.ExportJbeam.bl_idname, text=single_obs[0].name, icon='MESH_DATA')
         elif len(bpy.context.selected_objects):
-            row = l.row()
+            row = layout.row()
             row.operator(export_jbeam.ExportJbeam.bl_idname, text="invalid selection", icon='ERROR')
             row.enabled = False
 
-        row = l.row()
+        row = layout.row()
         num_scene_exports = getscene()
 
         row.operator(export_jbeam.ExportJbeam.bl_idname,
@@ -167,16 +167,16 @@ class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
 
 def getscene():
     num = 0
-    for obj in bpy.context.selectable_objects:
-        if obj.type == 'MESH':
-            if '.jbeam' in obj.name:
+    for selectable_object in bpy.context.selectable_objects:
+        if selectable_object.type == 'MESH':
+            if '.jbeam' in selectable_object.name:
                 num += 1
     return num
 
 
 def menu_func_export(self, context):
     # self.layout.operator(ExportJbeam.bl_idname, text='Export Jbeam v.' + __version__ + ' (.jbeam)')
-    self.layout.menu("IO_mesh_jbeam_ExporterChoice", text='Export JBeam v.' + PrintVer() + ' (.jbeam)')
+    self.layout.menu("IO_mesh_jbeam_ExporterChoice", text='JBeam (.jbeam)')
 
 
 updater_supported = True
@@ -187,7 +187,7 @@ except:
 
 
 class JbeamUpdated(bpy.types.Menu):
-    bl_label = "JBeam updated"
+    bl_label = "Blender JBeam Exporter updated"
 
     def draw(self, context):
         self.layout.operator("wm.url_open", text="Change log available at Github",
@@ -196,8 +196,8 @@ class JbeamUpdated(bpy.types.Menu):
 
 class JbeamUpdater(bpy.types.Operator):
     bl_idname = "script.update_jbeam"
-    bl_label = "JBeam updater"
-    bl_description = "updater for JBeam addon."
+    bl_label = "Blender JBeam Exporter updater"
+    bl_description = "Updater for the Blender JBeam Exporter addon."
 
     @classmethod
     def poll(self, context):
@@ -233,11 +233,11 @@ class JbeamUpdater(bpy.types.Operator):
                     zip = zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(download_url).read()))
                     zip.extractall(path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
-                    self.report({'INFO'}, "update done " + PrintVer(remote_ver))
+                    self.report({'INFO'}, "Update done " + PrintVer(remote_ver))
                     bpy.ops.wm.call_menu(name="JbeamUpdated")
                     return {'FINISHED'}
 
-            self.report({'INFO'}, "update already latest " + PrintVer(cur_version))
+            self.report({'INFO'}, "Addon is up to date " + PrintVer(cur_version))
             return {'FINISHED'}
 
         except urllib.error.URLError as err:
@@ -259,16 +259,16 @@ class JBEAM_Scene(bpy.types.Panel):
     bl_default_closed = True
 
     def draw(self, context):
-        l = self.layout
+        layout = self.layout
         scene = context.scene
         num_to_export = 0
 
-        l.operator(export_jbeam.ExportJbeam.bl_idname, text="Export")
+        layout.operator(export_jbeam.ExportJbeam.bl_idname, text="Export")
 
-        row = l.row()
+        row = layout.row()
         row.alignment = 'CENTER'
 
-        row = l.row()
+        row = layout.row()
         row.alert = len(scene.jbeam.export_path) == 0
         row.prop(scene.jbeam, "export_path")
 
@@ -276,11 +276,11 @@ class JBEAM_Scene(bpy.types.Panel):
         # row.label(text="Export format")
         # row.row().prop(scene.jbeam,"export_format",expand=True)
 
-        row = l.row()
+        row = layout.row()
         row.prop(scene.jbeam, "listbn")
         row.prop(scene.jbeam, "exp_ef")
 
-        row = l.row()
+        row = layout.row()
         row.prop(scene.jbeam, "exp_tricol")
         row.prop(scene.jbeam, "exp_diag")
 
@@ -292,7 +292,7 @@ class Jbeam_SceneProps(bpy.types.PropertyGroup):
         ('sel', "Selected", "Every selected object"), ('.jbeam', "*.jbeam", "All meshes with the name *.jbeam")),
                                           default='.jbeam')
     listbn: bpy.props.BoolProperty(name="List",
-                                   description="Export has a list of nodes and beams\nElse export as a jbean file(json)",
+                                   description="Export has a list of nodes and beams\nElse export as a JBeam file",
                                    default=False)
     exp_ef: bpy.props.BoolProperty(name="Edges From Faces", description="Export edges from faces", default=True)
     exp_tricol: bpy.props.BoolProperty(name="Collision Triangles", description="Export faces to collision triangles",
@@ -318,22 +318,22 @@ class JBEAM_Obj(bpy.types.Panel):
     bl_default_closed = True
 
     def draw(self, context):
-        l = self.layout
+        layout = self.layout
         if not context.active_object.type == "MESH":
             # print("Object not mesh")
-            row = l.row()
+            row = layout.row()
             row.prop(context.scene.jbeam, "incompatible")
         else:
-            obj = context.active_object.data
+            object_data = context.active_object.data
 
-            row = l.row()
-            row.prop(obj.jbeam, "name")
+            row = layout.row()
+            row.prop(object_data.jbeam, "name")
 
-            row = l.row()
-            row.prop(obj.jbeam, "slot")
+            row = layout.row()
+            row.prop(object_data.jbeam, "slot")
 
-            row = l.row()
-            row.prop(obj.jbeam, "nodename")
+            row = layout.row()
+            row.prop(object_data.jbeam, "nodename")
 
 
 classes = (
