@@ -318,7 +318,7 @@ class ExportJbeam(bpy.types.Operator):
                     file.write('\t\t\t],\n')
 
                 if context.scene.jbeam.exp_tricol:
-                    file.write('//--tri col--')
+                    file.write('//--Collision Triangles--')
                     file.write(anewline)
                     ob_new.modifiers.new("tricol", "TRIANGULATE")
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier="tricol")
