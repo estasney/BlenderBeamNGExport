@@ -12,9 +12,10 @@ from .tools import *
 
 
 class NGnode(object):
-    def __init__(self, i, node_name, x, y, z):
+    def __init__(self, i, node_name, groups, x, y, z):
         self.i = i
         self.node_name = node_name
+        self.groups = groups
         self.x = x
         self.y = y
         self.z = z
@@ -143,6 +144,7 @@ class ExportJbeam(bpy.types.Operator):
                 for vertex in mesh.vertices:
                     node = NGnode(vertex.index,
                                   export_object.data.jbeam.nodename,
+                                  vertex.groups,
                                   round(vertex.co[0] + export_object.delta_location[0], 3),
                                   round(vertex.co[1] + export_object.delta_location[1], 3),
                                   round(vertex.co[2] + export_object.delta_location[2], 3))
@@ -155,6 +157,7 @@ class ExportJbeam(bpy.types.Operator):
                 sorted_nodes = sorted(sorted_x, key=lambda NGnode: NGnode.y)
                 # sorted_nodes is sorted_x sorted by Yaxis
                 # sorted_nodes is nodes sorted by Z axis then -X axis then Y axis?
+                sorted_nodes = sorted(sorted_nodes, key=lambda NGnode: (0 in NGnode.groups.keys(), NGnode.groups[0].group if len(NGnode.groups)>0 else 255 ))
 
                 # Export
                 new_line = '\n'
@@ -211,11 +214,29 @@ class ExportJbeam(bpy.types.Operator):
                 jbeam_file.write(new_line)
                 if not context.scene.jbeam.listbn:
                     jbeam_file.write('\t\t"nodes":[\n\t\t\t["id", "posX", "posY", "posZ"],\n')
-                for vertex in sorted_nodes:
-                    if context.scene.jbeam.listbn:
-                        jbeam_file.write('[\"')
+
+                current_node_group_index = -2
+                def get_vertexgroup_id(groups):
+                    if len(groups) == 0:
+                        return -1
                     else:
-                        jbeam_file.write('\t\t\t[\"')
+                        return groups[0].group
+                def get_vertexgroup_name(groups):
+                    if len(groups) == 0:
+                        return ""
+                    else:
+                        return selected_object.vertex_groups[groups[0].group].name
+
+                for vertex in sorted_nodes:
+                    if current_node_group_index != get_vertexgroup_id(vertex.groups):
+                        current_node_group_index = get_vertexgroup_id(vertex.groups)
+                        if not context.scene.jbeam.listbn:
+                            jbeam_file.write('\t\t\t')
+                        jbeam_file.write('{"group":"%s"},\n' % (get_vertexgroup_name(vertex.groups)) )
+
+                    if not context.scene.jbeam.listbn:
+                        jbeam_file.write('\t\t\t')
+                    jbeam_file.write('[\"')
                     if vertex.x > 0:
                         vertex.node_name = vertex.node_name + 'l' + ('%s' % i)
                     elif vertex.x < 0:
@@ -230,8 +251,16 @@ class ExportJbeam(bpy.types.Operator):
                     jbeam_file.write(',')
                     jbeam_file.write('%s' % (round(vertex.z + export_object.delta_location[2], 3)))
                     jbeam_file.write('],')
+                    #to debug groups
+                    #jbeam_file.write('//grp[%d]="%s"' % (get_vertexgroup_id(vertex.groups), get_vertexgroup_name(vertex.groups)) )
                     jbeam_file.write(new_line)
                     i += 1
+
+                if current_node_group_index != -1:
+                    if not context.scene.jbeam.listbn:
+                        jbeam_file.write('\t\t\t')
+                    jbeam_file.write('{"group":""},\n')
+
                 if not context.scene.jbeam.listbn:
                     jbeam_file.write('\t\t\t],\n')
 
