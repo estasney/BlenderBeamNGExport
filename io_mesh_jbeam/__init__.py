@@ -284,30 +284,59 @@ class JBEAM_Scene(bpy.types.Panel):
         row.prop(scene.jbeam, "exp_tricol")
         row.prop(scene.jbeam, "exp_diag")
 
+        row = layout.row()
+        row.prop(scene.jbeam, "author_name")
+
 
 class Jbeam_SceneProps(bpy.types.PropertyGroup):
-    export_path: bpy.props.StringProperty(name="Export Path", description="Where all the .jbeam files will be saved",
-                                          subtype='DIR_PATH')
-    export_format: bpy.props.EnumProperty(name="Export Format", items=(
-        ('sel', "Selected", "Every selected object"), ('.jbeam', "*.jbeam", "All meshes with the name *.jbeam")),
-                                          default='.jbeam')
-    listbn: bpy.props.BoolProperty(name="List",
-                                   description="Export has a list of nodes and beams\nElse export as a JBeam file",
-                                   default=False)
-    exp_ef: bpy.props.BoolProperty(name="Edges From Faces", description="Export edges from faces", default=True)
-    exp_tricol: bpy.props.BoolProperty(name="Collision Triangles", description="Export faces to collision triangles",
-                                       default=True)
-    exp_diag: bpy.props.BoolProperty(name="Diagonal Quad Faces", description="Edge on quad face (automatic diagonals)",
-                                     default=True)
-    incompatible: bpy.props.BoolProperty(name="Incompatible type",
-                                         description="This type of object is not compatible with the exporter. Use mesh type please.",
-                                         default=True)
+    export_path: bpy.props.StringProperty(
+        name="Export Path",
+        description="Where all the .jbeam files will be saved",
+        subtype='DIR_PATH')
+    export_format: bpy.props.EnumProperty(
+        name="Export Format",
+        items=(
+            ('sel', "Selected", "Every selected object"),
+            ('.jbeam', "*.jbeam", "All meshes with the name *.jbeam")),
+        default='.jbeam')
+    listbn: bpy.props.BoolProperty(
+        name="List",
+        description="Export has a list of nodes and beams\nElse export as a JBeam file",
+        default=False)
+    exp_ef: bpy.props.BoolProperty(
+        name="Edges From Faces",
+        description="Export edges from faces",
+        default=True)
+    exp_tricol: bpy.props.BoolProperty(
+        name="Collision Triangles",
+        description="Export faces to collision triangles",
+        default=True)
+    exp_diag: bpy.props.BoolProperty(
+        name="Diagonal Quad Faces",
+        description="Edge on quad face (automatic diagonals)",
+        default=True)
+    incompatible: bpy.props.BoolProperty(
+        name="Incompatible type",
+        description="This type of object is not compatible with the exporter. Use mesh type please.",
+        default=True)
+    author_name: bpy.props.StringProperty(
+        name="Author",
+        description="Your name here")
 
 
 class Jbeam_ObjProps(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(name="Name", description="", default="")
-    slot: bpy.props.StringProperty(name="JBeam Slot", description="", default="main")
-    nodename: bpy.props.StringProperty(name="Nodes Prefix", description="", default="n")
+    name: bpy.props.StringProperty(
+        name="Name",
+        description="Part name",
+        default="")
+    slot: bpy.props.StringProperty(
+        name="JBeam Slot",
+        description="The slot for this part",
+        default="main")
+    nodename: bpy.props.StringProperty(
+        name="Nodes Prefix",
+        description="String prefix used to give names to nodes",
+        default="n")
 
 
 class JBEAM_Obj(bpy.types.Panel):

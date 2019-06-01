@@ -196,10 +196,9 @@ class ExportJbeam(bpy.types.Operator):
                 # file = open(self.filepath + '/' + filename, 'wt')
 
                 if not context.scene.jbeam.listbn:
-                    # if(bpy.context.preferences.filepaths.author == "" and False):
-                    author = 'Blender JBeam' + ' v' + PrintVer()
-                    # else:
-                    # author = bpy.context.preferences.filepaths.author + "," + 'Blender Jbeam' + ' v' + PrintVer()
+                    author = 'Blender JBeam v' + PrintVer()
+                    if context.scene.jbeam.author_name and len(context.scene.jbeam.author_name) > 0 :
+                        author = context.scene.jbeam.author_name + ", " + author
                     if '.jbeam' in export_object.name:
                         name = export_object.name[0:len(export_object.name) - 6]
                     else:
