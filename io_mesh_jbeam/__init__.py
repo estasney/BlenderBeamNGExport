@@ -148,7 +148,8 @@ class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
             # print(num_obs)
             if selected_object_count > 1:
                 group_layout.operator(export_jbeam.ExportJbeam.bl_idname,
-                                      text="Export selected objects (" + str(selected_object_count) + ")", icon='OBJECT_DATA')
+                                      text="Export selected objects (" + str(selected_object_count) + ")",
+                                      icon='OBJECT_DATA')
             elif selected_object_count:
                 group_layout.operator(export_jbeam.ExportJbeam.bl_idname, text=single_obs[0].name, icon='MESH_DATA')
         elif len(bpy.context.selected_objects):
@@ -272,10 +273,6 @@ class JBEAM_Scene(bpy.types.Panel):
         row.alert = len(scene.jbeam.export_path) == 0
         row.prop(scene.jbeam, "export_path")
 
-        # row = l.row().split(0.33)
-        # row.label(text="Export format")
-        # row.row().prop(scene.jbeam,"export_format",expand=True)
-
         row = layout.row()
         row.prop(scene.jbeam, "listbn")
         row.prop(scene.jbeam, "exp_ef")
@@ -293,12 +290,6 @@ class Jbeam_SceneProps(bpy.types.PropertyGroup):
         name="Export Path",
         description="Where all the .jbeam files will be saved",
         subtype='DIR_PATH')
-    export_format: bpy.props.EnumProperty(
-        name="Export Format",
-        items=(
-            ('sel', "Selected", "Every selected object"),
-            ('.jbeam', "*.jbeam", "All meshes with the name *.jbeam")),
-        default='.jbeam')
     listbn: bpy.props.BoolProperty(
         name="List",
         description="Export has a list of nodes and beams\nElse export as a JBeam file",
