@@ -1,2 +1,6 @@
 # JetBrains Products
 .idea
+
+#Python Byte code cache
+*.pyc
+__pycache__
