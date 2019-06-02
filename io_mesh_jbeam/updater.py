@@ -53,9 +53,7 @@ class JbeamUpdater(bpy.types.Operator):
     def execute(self, context):
         print("JBeam update...")
 
-        import sys
-
-        cur_version = sys.modules.get(__name__.split(".")[0]).bl_info['version']
+        cur_version = get_addon_version()
 
         try:
             data = urllib.request.urlopen(
@@ -87,7 +85,6 @@ class JbeamUpdater(bpy.types.Operator):
                     bpy.ops.wm.call_menu(name="JbeamUpdated")
                     return {'FINISHED'}
 
-            # self.report({'INFO'}, "Addon is up to date " + PrintVer())
             self.report({'INFO'}, "Addon is up to date: " + print_version())
             return {'FINISHED'}
 
