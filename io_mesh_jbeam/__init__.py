@@ -39,25 +39,19 @@ import bpy
 import imp
 import os
 
-# __version__ = PrintVer(sys.modules.get(__name__).bl_info['version'])
-__version__ = ''
-# http://wiki.blender.org/index.php/Dev:2.5/Py/Scripts/Cookbook/Code_snippets/Multi-File_packages#init_.py
-"""if "bpy" in locals():
-    import imp
-    if "export_jbeam" in locals():
-        imp.reload(export_jbeam)
-else:
-    import bpy"""
-
-for filename in [f for f in os.listdir(os.path.dirname(os.path.realpath(__file__))) if f.endswith(".py")]:
-    if filename == os.path.basename(__file__): continue
-    mod = sys.modules.get("{}.{}".format(__name__, filename[:-3]))
-    if mod: imp.reload(mod)
-
 from bpy.props import *
 from bpy.utils import *
 from .tools import *
 from . import export_jbeam
+
+for filename in [f for f in os.listdir(os.path.dirname(os.path.realpath(__file__))) if f.endswith(".py")]:
+    if filename == os.path.basename(__file__):
+        continue
+
+    mod = sys.modules.get("{}.{}".format(__name__, filename[:-3]))
+
+    if mod:
+        imp.reload(mod)
 
 
 class BeamGen(bpy.types.Operator):
@@ -69,10 +63,8 @@ class BeamGen(bpy.types.Operator):
     # execute() is called by blender when running the operator.
     def execute(self, context):
         print("started")
-
-        # Save currently active object
-        # active = context.active_object
         active_object = context.edit_object
+
         if active_object is None:
             self.report({'ERROR'}, 'ERROR : Currently not in edit mode! Operation cancelled!')
             print('CANCELLED: Not in edit mode')
@@ -80,7 +72,6 @@ class BeamGen(bpy.types.Operator):
 
         print("obj:" + active_object.name)
         vertices = []
-        edge_tmp = []
 
         bpy.ops.object.mode_set(mode='OBJECT')
 
@@ -89,18 +80,21 @@ class BeamGen(bpy.types.Operator):
                 vertices.append(vertex.index)
 
         vertex_count = len(vertices)
-        print("node_count:" + str(vertex_count))
+        print("vertex_count:" + str(vertex_count))
+
         if vertex_count <= 1:
             self.report({'ERROR'}, 'ERROR: Select more than 1 vertex')
             return {'CANCELLED'}
 
         origin = len(active_object.data.edges) - 1
-        i = 0
         edge_count = 0
+        i = 0
         j = vertex_count
+
         while j != 0:
             j -= 1
             edge_count += (vertex_count - (vertex_count - j))
+
         active_object.data.edges.add(edge_count)
 
         for n1 in vertices:
@@ -125,13 +119,15 @@ class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
         layout.operator_context = 'EXEC_DEFAULT'
 
         selected_objects = context.selected_objects
+
         if len(selected_objects):
-            single_obs = []
-            # print(exportables)
+            single_object = []
+
             for selected_object in selected_objects:
                 if selected_object.type == 'MESH':
-                    single_obs.append(selected_object)
-            '''groups = list([ex for ex in exportables if ex.ob_type == 'GROUP'])
+                    single_object.append(selected_object)
+
+            '''groups = list([ex for ex in selected_objects if ex.ob_type == 'GROUP'])
             groups.sort(key=lambda g: g.name.lower())
 
             group_layout = l
@@ -140,18 +136,20 @@ class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
                     if i == 0: group_col = l.column(align=True)
                     if i % 2 == 0: group_layout = group_col.row(align=True)
                 group_layout.operator(SmdExporter.bl_idname, text=group.name, icon='GROUP').group = group.get_id().name'''
+
             group_col = layout.column(align=True)
             group_layout = group_col.row(align=True)
             # group_layout.operator(ExportJbeam.bl_idname, text="group.name", icon='GROUP')
-            selected_object_count = len(single_obs)
-            # print(single_obs)
-            # print(num_obs)
+            selected_object_count = len(single_object)
+
             if selected_object_count > 1:
                 group_layout.operator(export_jbeam.ExportJbeam.bl_idname,
                                       text="Export selected objects (" + str(selected_object_count) + ")",
                                       icon='OBJECT_DATA')
+
             elif selected_object_count:
-                group_layout.operator(export_jbeam.ExportJbeam.bl_idname, text=single_obs[0].name, icon='MESH_DATA')
+                group_layout.operator(export_jbeam.ExportJbeam.bl_idname, text=single_object[0].name, icon='MESH_DATA')
+
         elif len(bpy.context.selected_objects):
             row = layout.row()
             row.operator(export_jbeam.ExportJbeam.bl_idname, text="invalid selection", icon='ERROR')
@@ -168,15 +166,16 @@ class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
 
 def getscene():
     num = 0
+
     for selectable_object in bpy.context.selectable_objects:
         if selectable_object.type == 'MESH':
             if '.jbeam' in selectable_object.name:
                 num += 1
+
     return num
 
 
 def menu_func_export(self, context):
-    # self.layout.operator(ExportJbeam.bl_idname, text='Export Jbeam v.' + __version__ + ' (.jbeam)')
     self.layout.menu("IO_mesh_jbeam_ExporterChoice", text='JBeam (.jbeam)')
 
 
@@ -228,6 +227,7 @@ class JbeamUpdater(bpy.types.Operator):
                     diff = int(remote_ver[i]) - int(cur_version[i])
                 except ValueError:
                     continue
+
                 if diff > 0:
                     print("Found new version {}, downloading from {}...".format(PrintVer(remote_ver), download_url))
 
@@ -244,9 +244,11 @@ class JbeamUpdater(bpy.types.Operator):
         except urllib.error.URLError as err:
             self.report({'ERROR'}, " ".join(["update err download failed : " + str(err)]))
             return {'CANCELLED'}
+
         except zipfile.BadZipfile:
             self.report({'ERROR'}, "update err corruption")
             return {'CANCELLED'}
+
         except IOError as err:
             self.report({'ERROR'}, " ".join(["update err unknown : ", str(err)]))
             return {'CANCELLED'}
@@ -262,9 +264,8 @@ class JBEAM_Scene(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        num_to_export = 0
 
-        layout.operator(export_jbeam.ExportJbeam.bl_idname, text="Export")
+        layout.operator(export_jbeam.ExportJbeam.bl_idname, text="Export JBeam")
 
         row = layout.row()
         row.alignment = 'CENTER'
