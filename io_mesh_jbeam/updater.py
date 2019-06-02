@@ -24,7 +24,7 @@ import io
 import bpy
 import os
 
-from .tools import *
+from .utils import *
 
 updater_supported = True
 try:

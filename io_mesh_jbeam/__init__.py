@@ -40,7 +40,7 @@ import os
 
 from bpy.props import *
 from bpy.utils import *
-from .tools import *
+from .utils import *
 from . import export_jbeam
 from . import updater
 

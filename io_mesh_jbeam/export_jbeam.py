@@ -30,7 +30,7 @@ from bpy.props import (BoolProperty,
                        EnumProperty,
                        )
 
-from .tools import *
+from .utils import *
 
 
 class NGnode(object):
