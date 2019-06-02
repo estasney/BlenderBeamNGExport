@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Script copyright (C) Thomas PORTASSAU (50thomatoes50)
+# Script copyright (C) Thomas PORTASSAU (50thomatoes50) & Julien VANELIAN (Distrikt64/Juju)
 
 # <pep8-80 compliant>
 
@@ -34,7 +34,6 @@ bl_info = {
 }
 
 import sys
-import io
 import bpy
 import imp
 import os
@@ -43,6 +42,7 @@ from bpy.props import *
 from bpy.utils import *
 from .tools import *
 from . import export_jbeam
+from . import updater
 
 for filename in [f for f in os.listdir(os.path.dirname(os.path.realpath(__file__))) if f.endswith(".py")]:
     if filename == os.path.basename(__file__):
@@ -56,7 +56,7 @@ for filename in [f for f in os.listdir(os.path.dirname(os.path.realpath(__file__
 
 class BeamGen(bpy.types.Operator):
     bl_idname = 'object.beamgen'
-    bl_description = 'beamGen' + ' v.' + PrintVer()
+    bl_description = 'beamGen' + ' v.' + print_version()
     bl_label = 'beam(edge) generator'
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -111,7 +111,7 @@ class BeamGen(bpy.types.Operator):
 
 
 class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
-    bl_label = 'Export JBeam' + ' v.' + PrintVer()
+    bl_label = 'Export JBeam' + ' v.' + print_version()
 
     def draw(self, context):
 
@@ -177,81 +177,6 @@ def getscene():
 
 def menu_func_export(self, context):
     self.layout.menu("IO_mesh_jbeam_ExporterChoice", text='JBeam (.jbeam)')
-
-
-updater_supported = True
-try:
-    import urllib.request, urllib.error, zipfile
-except:
-    updater_supported = False
-
-
-class JbeamUpdated(bpy.types.Menu):
-    bl_label = "Blender JBeam Exporter updated"
-
-    def draw(self, context):
-        self.layout.operator("wm.url_open", text="Change log available at Github",
-                             icon='TEXT').url = "https://github.com/50thomatoes50/BlenderBeamNGExport/blob/master/changelod.md"
-
-
-class JbeamUpdater(bpy.types.Operator):
-    bl_idname = "script.update_jbeam"
-    bl_label = "Blender JBeam Exporter updater"
-    bl_description = "Updater for the Blender JBeam Exporter addon."
-
-    @classmethod
-    def poll(self, context):
-        return updater_supported
-
-    def execute(self, context):
-        print("JBeam update...")
-
-        import sys
-        cur_version = sys.modules.get(__name__.split(".")[0]).bl_info['version']
-
-        try:
-            data = urllib.request.urlopen(
-                "https://raw.githubusercontent.com/50thomatoes50/BlenderBeamNGExport/master/io_mesh_jbeam/version.json").read().decode(
-                'ASCII').split("\n")
-            remote_ver = data[0].strip().split(".")
-            remote_bpy = data[1].strip().split(".")
-            download_url = data[2].strip()
-
-            for i in range(min(len(remote_bpy), len(bpy.app.version))):
-                if int(remote_bpy[i]) > bpy.app.version[i]:
-                    self.report({'ERROR'}, "Blender is outdated. min ver:" + PrintVer(remote_bpy))
-                    return {'FINISHED'}
-
-            for i in range(min(len(remote_ver), len(cur_version))):
-                try:
-                    diff = int(remote_ver[i]) - int(cur_version[i])
-                except ValueError:
-                    continue
-
-                if diff > 0:
-                    print("Found new version {}, downloading from {}...".format(PrintVer(remote_ver), download_url))
-
-                    zip = zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(download_url).read()))
-                    zip.extractall(path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-
-                    self.report({'INFO'}, "Update done " + PrintVer(remote_ver))
-                    bpy.ops.wm.call_menu(name="JbeamUpdated")
-                    return {'FINISHED'}
-
-            self.report({'INFO'}, "Addon is up to date " + PrintVer(cur_version))
-            return {'FINISHED'}
-
-        except urllib.error.URLError as err:
-            self.report({'ERROR'}, " ".join(["update err download failed : " + str(err)]))
-            return {'CANCELLED'}
-
-        except zipfile.BadZipfile:
-            self.report({'ERROR'}, "update err corruption")
-            return {'CANCELLED'}
-
-        except IOError as err:
-            self.report({'ERROR'}, " ".join(["update err unknown : ", str(err)]))
-            return {'CANCELLED'}
 
 
 class JBEAM_Scene(bpy.types.Panel):
@@ -360,13 +285,13 @@ class JBEAM_Obj(bpy.types.Panel):
 classes = (
     BeamGen,
     IO_mesh_jbeam_ExporterChoice,
-    JbeamUpdated,
-    JbeamUpdater,
     JBEAM_Scene,
     Jbeam_SceneProps,
     Jbeam_ObjProps,
     JBEAM_Obj,
     export_jbeam.ExportJbeam,
+    updater.JbeamUpdater,
+    updater.JbeamUpdated
 )
 
 

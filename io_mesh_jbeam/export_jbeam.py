@@ -1,3 +1,25 @@
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
+
+# Script copyright (C) Thomas PORTASSAU (50thomatoes50) & Julien VANELIAN (Distrikt64/Juju)
+
+# <pep8-80 compliant>
+
 import os
 import struct
 import bpy
@@ -203,7 +225,7 @@ class ExportJbeam(bpy.types.Operator):
                 jbeam_file = open(self.filepath + filename, 'wt')
 
                 if not context.scene.jbeam.listbn:
-                    author = 'Blender JBeam v' + PrintVer()
+                    author = 'Blender JBeam v' + print_version()
 
                     if context.scene.jbeam.author_name and len(context.scene.jbeam.author_name) > 0:
                         author = context.scene.jbeam.author_name + ", " + author
@@ -364,7 +386,8 @@ class ExportJbeam(bpy.types.Operator):
                                         sorted_nodes[node_index2].node_name, sorted_nodes[node_index4].node_name))
 
                         else:
-                            self.report({'ERROR'}, 'ERROR: Mesh contains Ngons, only triangles and quads are supported.')
+                            self.report({'ERROR'},
+                                        'ERROR: Mesh contains Ngons, only triangles and quads are supported.')
 
                             if jbeam_file:
                                 jbeam_file.close()
