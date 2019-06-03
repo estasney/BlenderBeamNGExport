@@ -33,8 +33,8 @@ except:
     updater_supported = False
 
 
-class JbeamUpdated(bpy.types.Menu):
-    bl_label = "Blender JBeam Exporter updated"
+class MENU_MT_jbeam_updated(bpy.types.Menu):
+    bl_label = "JBeam Exporter successfully updated"
 
     def draw(self, context):
         self.layout.operator("wm.url_open", text="Change log available at Github",
@@ -43,7 +43,7 @@ class JbeamUpdated(bpy.types.Menu):
 
 class JbeamUpdater(bpy.types.Operator):
     bl_idname = "script.update_jbeam"
-    bl_label = "Blender JBeam Exporter updater"
+    bl_label = "JBeam Exporter updater"
     bl_description = "Updater for the Blender JBeam Exporter addon."
 
     @classmethod
@@ -82,7 +82,7 @@ class JbeamUpdater(bpy.types.Operator):
                     zip.extractall(path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
                     self.report({'INFO'}, "Update done " + print_version(remote_ver))
-                    bpy.ops.wm.call_menu(name="JbeamUpdated")
+                    bpy.ops.wm.call_menu(name="MENU_MT_jbeam_updated")
                     return {'FINISHED'}
 
             self.report({'INFO'}, "Addon is up to date: " + print_version())

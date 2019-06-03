@@ -291,13 +291,14 @@ classes = (
     JBEAM_Obj,
     export_jbeam.ExportJbeam,
     updater.JbeamUpdater,
-    updater.JbeamUpdated
+    updater.MENU_MT_jbeam_updated
 )
 
 
 def register():
     for c in classes:
         bpy.utils.register_class(c)
+
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 
     def make_pointer(prop_type):
@@ -310,6 +311,7 @@ def register():
 def unregister():
     for c in reversed(classes):
         bpy.utils.unregister_class(c)
+
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
     del bpy.types.Scene.jbeam
     del bpy.types.Mesh.jbeam
