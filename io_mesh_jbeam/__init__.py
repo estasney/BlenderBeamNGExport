@@ -290,7 +290,7 @@ classes = (
     Jbeam_ObjProps,
     JBEAM_Obj,
     export_jbeam.ExportJbeam,
-    updater.JbeamUpdater,
+    updater.SCRIPT_OT_jbeam_update,
     updater.MENU_MT_jbeam_updated
 )
 

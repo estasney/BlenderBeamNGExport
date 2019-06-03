@@ -41,8 +41,8 @@ class MENU_MT_jbeam_updated(bpy.types.Menu):
                              icon='TEXT').url = "https://github.com/50thomatoes50/BlenderBeamNGExport/blob/master/changelod.md"
 
 
-class JbeamUpdater(bpy.types.Operator):
-    bl_idname = "script.update_jbeam"
+class SCRIPT_OT_jbeam_update(bpy.types.Operator):
+    bl_idname = "script.jbeam_update"
     bl_label = "JBeam Exporter updater"
     bl_description = "Updater for the Blender JBeam Exporter addon."
 
