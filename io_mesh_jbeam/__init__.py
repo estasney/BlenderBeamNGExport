@@ -156,16 +156,16 @@ class MENU_MT_jbeam_export(bpy.types.Menu):
             row.enabled = False
 
         row = layout.row()
-        num_scene_exports = getscene()
+        exportable_mesh_count = get_exportable_mesh_count()
 
         row.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname,
-                     text="Scene(selectable): all mesh like *.jbeam (" + str(num_scene_exports) + ")",
+                     text="Scene(selectable): all mesh like *.jbeam (" + str(exportable_mesh_count) + ")",
                      icon='SCENE_DATA').export_scene = True
 
-        row.enabled = num_scene_exports > 0
+        row.enabled = exportable_mesh_count > 0
 
 
-def getscene():
+def get_exportable_mesh_count():
     num = 0
 
     for selectable_object in bpy.context.selectable_objects:
@@ -180,7 +180,7 @@ def menu_func_export(self, context):
     self.layout.menu("MENU_MT_jbeam_export", text='JBeam (.jbeam)')
 
 
-class JBEAM_Scene(bpy.types.Panel):
+class PANEL_PT_jbeam_export(bpy.types.Panel):
     bl_label = "JBeam Exporter"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -286,7 +286,7 @@ class JBEAM_Obj(bpy.types.Panel):
 classes = (
     BeamGen,
     MENU_MT_jbeam_export,
-    JBEAM_Scene,
+    PANEL_PT_jbeam_export,
     Jbeam_SceneProps,
     Jbeam_ObjProps,
     JBEAM_Obj,
