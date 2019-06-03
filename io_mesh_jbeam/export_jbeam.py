@@ -34,8 +34,8 @@ from .utils import *
 
 
 class NGnode(object):
-    def __init__(self, i, node_name, groups, x, y, z):
-        self.i = i
+    def __init__(self, id, node_name, groups, x, y, z):
+        self.id = id
         self.node_name = node_name
         self.groups = groups
         self.x = x
@@ -43,8 +43,8 @@ class NGnode(object):
         self.z = z
 
 
-class ExportJbeam(bpy.types.Operator):
-    bl_idname = 'export_mesh.jbeam'
+class SCRIPT_OT_jbeam_export(bpy.types.Operator):
+    bl_idname = 'script.jbeam_export'
     bl_description = 'Export for use in BeamNG.drive (.jbeam)'
     bl_label = 'Export JBeam'
 
@@ -313,10 +313,10 @@ class ExportJbeam(bpy.types.Operator):
                     else:
                         jbeam_file.write('\t\t\t[\"')
 
-                    node_index1 = ([n.i for n in sorted_nodes].index(e.vertices[0]))
+                    node_index1 = ([n.id for n in sorted_nodes].index(e.vertices[0]))
                     jbeam_file.write('%s\"' % sorted_nodes[node_index1].node_name)
                     jbeam_file.write(',')
-                    node_index2 = ([n.i for n in sorted_nodes].index(e.vertices[1]))
+                    node_index2 = ([n.id for n in sorted_nodes].index(e.vertices[1]))
                     jbeam_file.write('\"%s\"' % sorted_nodes[node_index2].node_name)
                     jbeam_file.write('],')
                     jbeam_file.write(new_line)
@@ -326,9 +326,9 @@ class ExportJbeam(bpy.types.Operator):
                         vertices = face.vertices
 
                         if len(vertices) == 3:
-                            node_index1 = ([n.i for n in sorted_nodes].index(vertices[0]))
-                            node_index2 = ([n.i for n in sorted_nodes].index(vertices[1]))
-                            node_index3 = ([n.i for n in sorted_nodes].index(vertices[2]))
+                            node_index1 = ([n.id for n in sorted_nodes].index(vertices[0]))
+                            node_index2 = ([n.id for n in sorted_nodes].index(vertices[1]))
+                            node_index3 = ([n.id for n in sorted_nodes].index(vertices[2]))
 
                             if context.scene.jbeam.listbn:
                                 jbeam_file.write('["%s","%s"],\n' % (
@@ -346,10 +346,10 @@ class ExportJbeam(bpy.types.Operator):
                                     sorted_nodes[node_index3].node_name, sorted_nodes[node_index1].node_name))
 
                         elif len(vertices) == 4:
-                            node_index1 = ([n.i for n in sorted_nodes].index(vertices[0]))
-                            node_index2 = ([n.i for n in sorted_nodes].index(vertices[1]))
-                            node_index3 = ([n.i for n in sorted_nodes].index(vertices[2]))
-                            node_index4 = ([n.i for n in sorted_nodes].index(vertices[3]))
+                            node_index1 = ([n.id for n in sorted_nodes].index(vertices[0]))
+                            node_index2 = ([n.id for n in sorted_nodes].index(vertices[1]))
+                            node_index3 = ([n.id for n in sorted_nodes].index(vertices[2]))
+                            node_index4 = ([n.id for n in sorted_nodes].index(vertices[3]))
 
                             if context.scene.jbeam.listbn:
                                 jbeam_file.write('["%s","%s"],\n' % (
@@ -418,9 +418,9 @@ class ExportJbeam(bpy.types.Operator):
                             if not context.scene.jbeam.listbn:
                                 jbeam_file.write('\t\t\t')
 
-                            node_index1 = ([n.i for n in sorted_nodes].index(vertices[0]))
-                            node_index2 = ([n.i for n in sorted_nodes].index(vertices[1]))
-                            node_index3 = ([n.i for n in sorted_nodes].index(vertices[2]))
+                            node_index1 = ([n.id for n in sorted_nodes].index(vertices[0]))
+                            node_index2 = ([n.id for n in sorted_nodes].index(vertices[1]))
+                            node_index3 = ([n.id for n in sorted_nodes].index(vertices[2]))
                             jbeam_file.write('["%s","%s","%s"],\n' % (
                                 sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name,
                                 sorted_nodes[node_index3].node_name))

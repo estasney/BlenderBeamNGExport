@@ -139,28 +139,29 @@ class MENU_MT_jbeam_export(bpy.types.Menu):
 
             group_col = layout.column(align=True)
             group_layout = group_col.row(align=True)
-            # group_layout.operator(ExportJbeam.bl_idname, text="group.name", icon='GROUP')
+            # group_layout.operator(SCRIPT_OT_jbeam_export.bl_idname, text="group.name", icon='GROUP')
             selected_object_count = len(single_object)
 
             if selected_object_count > 1:
-                group_layout.operator(export_jbeam.ExportJbeam.bl_idname,
+                group_layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname,
                                       text="Export selected objects (" + str(selected_object_count) + ")",
                                       icon='OBJECT_DATA')
 
             elif selected_object_count:
-                group_layout.operator(export_jbeam.ExportJbeam.bl_idname, text=single_object[0].name, icon='MESH_DATA')
+                group_layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text=single_object[0].name, icon='MESH_DATA')
 
         elif len(bpy.context.selected_objects):
             row = layout.row()
-            row.operator(export_jbeam.ExportJbeam.bl_idname, text="invalid selection", icon='ERROR')
+            row.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text="invalid selection", icon='ERROR')
             row.enabled = False
 
         row = layout.row()
         num_scene_exports = getscene()
 
-        row.operator(export_jbeam.ExportJbeam.bl_idname,
+        row.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname,
                      text="Scene(selectable): all mesh like *.jbeam (" + str(num_scene_exports) + ")",
                      icon='SCENE_DATA').export_scene = True
+
         row.enabled = num_scene_exports > 0
 
 
@@ -190,7 +191,7 @@ class JBEAM_Scene(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
-        layout.operator(export_jbeam.ExportJbeam.bl_idname, text="Export JBeam")
+        layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text="Export JBeam")
 
         row = layout.row()
         row.alignment = 'CENTER'
@@ -289,7 +290,7 @@ classes = (
     Jbeam_SceneProps,
     Jbeam_ObjProps,
     JBEAM_Obj,
-    export_jbeam.ExportJbeam,
+    export_jbeam.SCRIPT_OT_jbeam_export,
     updater.SCRIPT_OT_jbeam_update,
     updater.MENU_MT_jbeam_updated
 )
