@@ -212,7 +212,7 @@ class PANEL_PT_jbeam_export(bpy.types.Panel):
         row.prop(scene.jbeam, "author_name")
 
 
-class Jbeam_SceneProps(bpy.types.PropertyGroup):
+class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
     export_path: bpy.props.StringProperty(
         name="Export Path",
         description="Where all the .jbeam files will be saved",
@@ -242,7 +242,7 @@ class Jbeam_SceneProps(bpy.types.PropertyGroup):
         description="Your name here")
 
 
-class Jbeam_ObjProps(bpy.types.PropertyGroup):
+class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(
         name="Name",
         description="Part name",
@@ -253,7 +253,7 @@ class Jbeam_ObjProps(bpy.types.PropertyGroup):
         default="main")
     nodename: bpy.props.StringProperty(
         name="Nodes Prefix",
-        description="String prefix used to give names to nodes",
+        description="String prefix used for node names",
         default="n")
 
 
@@ -287,8 +287,8 @@ classes = (
     BeamGen,
     MENU_MT_jbeam_export,
     PANEL_PT_jbeam_export,
-    Jbeam_SceneProps,
-    Jbeam_ObjProps,
+    PROPERTIES_PG_jbeam_scene,
+    PROPERTIES_PG_jbeam_object,
     JBEAM_Obj,
     export_jbeam.SCRIPT_OT_jbeam_export,
     updater.SCRIPT_OT_jbeam_update,
@@ -305,8 +305,8 @@ def register():
     def make_pointer(prop_type):
         return bpy.props.PointerProperty(name="Jbeam settings", type=prop_type)
 
-    bpy.types.Scene.jbeam = make_pointer(Jbeam_SceneProps)
-    bpy.types.Mesh.jbeam = make_pointer(Jbeam_ObjProps)
+    bpy.types.Scene.jbeam = make_pointer(PROPERTIES_PG_jbeam_scene)
+    bpy.types.Mesh.jbeam = make_pointer(PROPERTIES_PG_jbeam_object)
 
 
 def unregister():
