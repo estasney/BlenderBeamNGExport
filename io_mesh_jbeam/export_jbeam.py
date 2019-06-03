@@ -84,9 +84,7 @@ class ExportJbeam(bpy.types.Operator):
         options={'HIDDEN'})
 
     def invoke(self, context, event):
-        # context.window_manager.fileselect_add(self)
-        # return {'RUNNING_MODAL'}
-        ops.wm.call_menu(name="IO_mesh_jbeam_ExporterChoice")
+        ops.wm.call_menu(name="MENU_MT_jbeam_export")
         return {'PASS_THROUGH'}
 
     def execute(self, context):

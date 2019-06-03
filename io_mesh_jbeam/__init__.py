@@ -110,8 +110,8 @@ class BeamGen(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
-    bl_label = 'Export JBeam' + ' v.' + print_version()
+class MENU_MT_jbeam_export(bpy.types.Menu):
+    bl_label = 'Export JBeam'
 
     def draw(self, context):
 
@@ -176,7 +176,7 @@ def getscene():
 
 
 def menu_func_export(self, context):
-    self.layout.menu("IO_mesh_jbeam_ExporterChoice", text='JBeam (.jbeam)')
+    self.layout.menu("MENU_MT_jbeam_export", text='JBeam (.jbeam)')
 
 
 class JBEAM_Scene(bpy.types.Panel):
@@ -284,7 +284,7 @@ class JBEAM_Obj(bpy.types.Panel):
 
 classes = (
     BeamGen,
-    IO_mesh_jbeam_ExporterChoice,
+    MENU_MT_jbeam_export,
     JBEAM_Scene,
     Jbeam_SceneProps,
     Jbeam_ObjProps,
