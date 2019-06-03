@@ -248,8 +248,8 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
         description="Part name",
         default="")
     slot: bpy.props.StringProperty(
-        name="JBeam Slot",
-        description="The slot for this part",
+        name="Slot",
+        description="Slot name for this part",
         default="main")
     nodename: bpy.props.StringProperty(
         name="Nodes Prefix",
@@ -257,8 +257,8 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
         default="n")
 
 
-class JBEAM_Obj(bpy.types.Panel):
-    bl_label = "JBeam parameter"
+class PANEL_PT_jbeam_object(bpy.types.Panel):
+    bl_label = "JBeam Properties"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "data"
@@ -289,7 +289,7 @@ classes = (
     PANEL_PT_jbeam_export,
     PROPERTIES_PG_jbeam_scene,
     PROPERTIES_PG_jbeam_object,
-    JBEAM_Obj,
+    PANEL_PT_jbeam_object,
     export_jbeam.SCRIPT_OT_jbeam_export,
     updater.SCRIPT_OT_jbeam_update,
     updater.MENU_MT_jbeam_updated
