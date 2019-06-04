@@ -299,7 +299,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     jbeam_file.write('{"group":""},\n')
 
                 if not context.scene.jbeam.listbn:
-                    jbeam_file.write('\t\t\t],\n')
+                    jbeam_file.write('\t\t],\n')
 
                 jbeam_file.write('//--Beams--')
                 jbeam_file.write(new_line)
@@ -397,7 +397,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                             return {'CANCELLED'}
 
                 if not context.scene.jbeam.listbn:
-                    jbeam_file.write('\t\t\t],\n')
+                    jbeam_file.write('\t\t],\n')
 
                 if context.scene.jbeam.exp_tricol:
                     jbeam_file.write('//--Collision Triangles--')
@@ -437,7 +437,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                             return {'CANCELLED'}
 
                     if not context.scene.jbeam.listbn:
-                        jbeam_file.write('\t\t\t],\n')
+                        jbeam_file.write('\t\t],\n')
 
                 if not context.scene.jbeam.listbn:
                     jbeam_file.write('\t}\n}')
