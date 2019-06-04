@@ -62,12 +62,10 @@ class BeamGen(bpy.types.Operator):
 
     # execute() is called by blender when running the operator.
     def execute(self, context):
-        print("started")
         active_object = context.edit_object
 
         if active_object is None:
             self.report({'ERROR'}, 'ERROR : Currently not in edit mode! Operation cancelled!')
-            print('CANCELLED: Not in edit mode')
             return {'CANCELLED'}
 
         print("obj:" + active_object.name)
@@ -84,6 +82,7 @@ class BeamGen(bpy.types.Operator):
 
         if vertex_count <= 1:
             self.report({'ERROR'}, 'ERROR: Select more than 1 vertex')
+            bpy.ops.object.mode_set(mode='EDIT')
             return {'CANCELLED'}
 
         origin = len(active_object.data.edges) - 1
@@ -159,7 +158,7 @@ class MENU_MT_jbeam_export(bpy.types.Menu):
         exportable_mesh_count = get_exportable_mesh_count()
 
         row.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname,
-                     text="Scene(selectable): all mesh like *.jbeam (" + str(exportable_mesh_count) + ")",
+                     text="Scene (selectable): all mesh like *.jbeam (" + str(exportable_mesh_count) + ")",
                      icon='SCENE_DATA').export_scene = True
 
         row.enabled = exportable_mesh_count > 0
