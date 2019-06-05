@@ -106,7 +106,9 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     # selected_object.select = False
                     export_objects.append(selected_object)
 
-        if len(export_objects) == 0:
+        export_objects_count = len(export_objects)
+
+        if export_objects_count == 0:
             self.report({'ERROR'}, 'ERROR : At least one object must be selected to export')
             return {'CANCELLED'}
 
@@ -468,6 +470,8 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
             # Restore active object
             bpy.context.view_layer.objects.active = active_object
 
+            self.report({'INFO'}, 'Successfully exported ' +
+                        str(export_objects_count) + (' JBeam file' if export_objects_count == 1 else ' JBeam files'))
             return {'FINISHED'}
 
         except Exception as e:
