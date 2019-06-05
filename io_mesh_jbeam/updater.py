@@ -51,7 +51,7 @@ class SCRIPT_OT_jbeam_update(bpy.types.Operator):
         return updater_supported
 
     def execute(self, context):
-        print("JBeam update...")
+        print("Checking JBeam Exporter addon updates...")
 
         cur_version = get_addon_version()
 

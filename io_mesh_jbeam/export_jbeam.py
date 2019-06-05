@@ -107,8 +107,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     export_objects.append(selected_object)
 
         if len(export_objects) == 0:
-            '''self.report({'ERROR'}, 'ERROR : At least one object must be selected to export')
-            print('CANCELLED: Must be select objects to export')'''
+            self.report({'ERROR'}, 'ERROR : At least one object must be selected to export')
             return {'CANCELLED'}
 
         temp_mesh = None
@@ -159,7 +158,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                 nodes = []
                 for vertex in mesh.vertices:
                     node = NGnode(vertex.index,
-                                  export_object.data.jbeam.nodename,
+                                  export_object.data.jbeam.node_prefix,
                                   vertex.groups,
                                   round(vertex.co[0] + export_object.delta_location[0], 3),
                                   round(vertex.co[1] + export_object.delta_location[1], 3),
@@ -223,7 +222,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                 jbeam_file = open(self.filepath + filename, 'wt')
 
                 if not context.scene.jbeam.listbn:
-                    author = 'Blender JBeam v' + print_version()
+                    author = 'Blender JBeam Exporter v' + print_version()
 
                     if context.scene.jbeam.author_name and len(context.scene.jbeam.author_name) > 0:
                         author = context.scene.jbeam.author_name + ", " + author

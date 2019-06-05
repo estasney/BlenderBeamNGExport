@@ -33,7 +33,6 @@ bl_info = {
     "category": "Import-Export"
 }
 
-import sys
 import bpy
 import imp
 import os
@@ -60,7 +59,6 @@ class BeamGen(bpy.types.Operator):
     bl_label = 'beam(edge) generator'
     bl_options = {'REGISTER', 'UNDO'}
 
-    # execute() is called by blender when running the operator.
     def execute(self, context):
         active_object = context.edit_object
 
@@ -68,7 +66,6 @@ class BeamGen(bpy.types.Operator):
             self.report({'ERROR'}, 'ERROR : Currently not in edit mode! Operation cancelled!')
             return {'CANCELLED'}
 
-        print("obj:" + active_object.name)
         vertices = []
 
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -78,7 +75,6 @@ class BeamGen(bpy.types.Operator):
                 vertices.append(vertex.index)
 
         vertex_count = len(vertices)
-        print("vertex_count:" + str(vertex_count))
 
         if vertex_count <= 1:
             self.report({'ERROR'}, 'ERROR: Select more than 1 vertex')
@@ -105,7 +101,6 @@ class BeamGen(bpy.types.Operator):
 
         bpy.ops.object.mode_set(mode='EDIT')
 
-        # this lets blender know the operator finished successfully.
         return {'FINISHED'}
 
 
@@ -147,7 +142,8 @@ class MENU_MT_jbeam_export(bpy.types.Menu):
                                       icon='OBJECT_DATA')
 
             elif selected_object_count:
-                group_layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text=single_object[0].name, icon='MESH_DATA')
+                group_layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text=single_object[0].name,
+                                      icon='MESH_DATA')
 
         elif len(bpy.context.selected_objects):
             row = layout.row()
@@ -250,7 +246,7 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
         name="Slot",
         description="Slot name for this part",
         default="main")
-    nodename: bpy.props.StringProperty(
+    node_prefix: bpy.props.StringProperty(
         name="Nodes Prefix",
         description="String prefix used for node names",
         default="n")
@@ -266,7 +262,6 @@ class PANEL_PT_jbeam_object(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         if not context.active_object.type == "MESH":
-            # print("Object not mesh")
             row = layout.row()
             row.prop(context.scene.jbeam, "incompatible")
         else:
@@ -279,7 +274,7 @@ class PANEL_PT_jbeam_object(bpy.types.Panel):
             row.prop(object_data.jbeam, "slot")
 
             row = layout.row()
-            row.prop(object_data.jbeam, "nodename")
+            row.prop(object_data.jbeam, "node_prefix")
 
 
 classes = (
