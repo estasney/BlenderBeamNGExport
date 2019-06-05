@@ -101,6 +101,8 @@ class BeamGen(bpy.types.Operator):
 
         bpy.ops.object.mode_set(mode='EDIT')
 
+        self.report({'INFO'}, 'BeamGen successfully created ' +
+                              str(edge_count) + (' edge' if edge_count == 1 else ' edges'))
         return {'FINISHED'}
 
 
