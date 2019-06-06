@@ -58,22 +58,17 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
         description="File path used for exporting the JBeam file",
         maxlen=1024, default="")
 
-    listbn: bpy.props.BoolProperty(
-        name="Export has a list of beam and nodes",
-        description="",
-        default=False)
-
-    exp_ef: bpy.props.BoolProperty(
+    export_edges_from_faces: bpy.props.BoolProperty(
         name="Export edge from face",
         description="",
         default=True)
 
-    exp_tricol: bpy.props.BoolProperty(
+    export_collision_triangles: bpy.props.BoolProperty(
         name="Export Faces to collision triangle",
         description="",
         default=True)
 
-    exp_diag: bpy.props.BoolProperty(
+    export_face_diagonals: bpy.props.BoolProperty(
         name="Edge on quad face",
         description="",
         default=True)
@@ -224,7 +219,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                 jbeam_file = open(self.filepath + filename, 'wt')
 
-                if not context.scene.jbeam.listbn:
+                if context.scene.jbeam.export_mode == 'jbeam':
                     authors = 'Blender JBeam Exporter v' + print_version()
 
                     if context.scene.jbeam.author_names and len(context.scene.jbeam.author_names) > 0:
@@ -253,7 +248,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                 jbeam_file.write('//--Nodes--')
                 jbeam_file.write(new_line)
 
-                if not context.scene.jbeam.listbn:
+                if context.scene.jbeam.export_mode == 'jbeam':
                     jbeam_file.write('\t"nodes":[\n\t\t["id", "posX", "posY", "posZ"],\n')
 
                 current_node_group_index = -2
@@ -274,12 +269,12 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     if current_node_group_index != get_vertex_group_id(vertex.groups):
                         current_node_group_index = get_vertex_group_id(vertex.groups)
 
-                        if not context.scene.jbeam.listbn:
+                        if context.scene.jbeam.export_mode == 'jbeam':
                             jbeam_file.write('\t\t')
 
                         jbeam_file.write('{"group":"%s"},\n' % (get_vertex_group_name(vertex.groups)))
 
-                    if not context.scene.jbeam.listbn:
+                    if context.scene.jbeam.export_mode == 'jbeam':
                         jbeam_file.write('\t\t')
 
                     jbeam_file.write('[\"')
@@ -306,22 +301,22 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     i += 1
 
                 if current_node_group_index != -1:
-                    if not context.scene.jbeam.listbn:
+                    if context.scene.jbeam.export_mode == 'jbeam':
                         jbeam_file.write('\t\t')
 
                     jbeam_file.write('{"group":""},\n')
 
-                if not context.scene.jbeam.listbn:
+                if context.scene.jbeam.export_mode == 'jbeam':
                     jbeam_file.write('\t],\n')
 
                 jbeam_file.write('//--Beams--')
                 jbeam_file.write(new_line)
 
-                if not context.scene.jbeam.listbn:
+                if context.scene.jbeam.export_mode == 'jbeam':
                     jbeam_file.write('\t"beams":[\n\t\t["id1:", "id2:"],\n')
 
                 for e in mesh.edges:
-                    if context.scene.jbeam.listbn:
+                    if context.scene.jbeam.export_mode == 'list':
                         jbeam_file.write('[\"')
                     else:
                         jbeam_file.write('\t\t[\"')
@@ -334,7 +329,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     jbeam_file.write('],')
                     jbeam_file.write(new_line)
 
-                if context.scene.jbeam.exp_ef:
+                if context.scene.jbeam.export_edges_from_faces:
                     for face in mesh.polygons:
                         vertices = face.vertices
 
@@ -343,7 +338,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                             node_index2 = ([n.id for n in sorted_nodes].index(vertices[1]))
                             node_index3 = ([n.id for n in sorted_nodes].index(vertices[2]))
 
-                            if context.scene.jbeam.listbn:
+                            if context.scene.jbeam.export_mode == 'list':
                                 jbeam_file.write('["%s","%s"],\n' % (
                                     sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name))
                                 jbeam_file.write('["%s","%s"],\n' % (
@@ -364,7 +359,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                             node_index3 = ([n.id for n in sorted_nodes].index(vertices[2]))
                             node_index4 = ([n.id for n in sorted_nodes].index(vertices[3]))
 
-                            if context.scene.jbeam.listbn:
+                            if context.scene.jbeam.export_mode == 'list':
                                 jbeam_file.write('["%s","%s"],\n' % (
                                     sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name))
                                 jbeam_file.write('["%s","%s"],\n' % (
@@ -384,8 +379,8 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                                 jbeam_file.write('\t\t["%s","%s"],\n' % (
                                     sorted_nodes[node_index4].node_name, sorted_nodes[node_index1].node_name))
 
-                            if context.scene.jbeam.exp_diag:
-                                if self.listbn:
+                            if context.scene.jbeam.export_face_diagonals:
+                                if context.scene.jbeam.export_mode == 'list':
                                     jbeam_file.write('["%s","%s"],\n' % (
                                         sorted_nodes[node_index1].node_name, sorted_nodes[node_index3].node_name))
                                     jbeam_file.write('["%s","%s"],\n' % (
@@ -409,16 +404,16 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                             return {'CANCELLED'}
 
-                if not context.scene.jbeam.listbn:
+                if context.scene.jbeam.export_mode == 'jbeam':
                     jbeam_file.write('\t],\n')
 
-                if context.scene.jbeam.exp_tricol:
+                if context.scene.jbeam.export_collision_triangles:
                     jbeam_file.write('//--Collision Triangles--')
                     jbeam_file.write(new_line)
                     temp_object.modifiers.new("tricol", "TRIANGULATE")
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier="tricol")
 
-                    if not context.scene.jbeam.listbn:
+                    if context.scene.jbeam.export_mode == 'jbeam':
                         jbeam_file.write('\t"triangles":[\n\t\t["id1:", "id2:", "id3:"],\n')
 
                     mesh = temp_object.data
@@ -428,7 +423,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                         vertices = face.vertices
 
                         if len(vertices) == 3:
-                            if not context.scene.jbeam.listbn:
+                            if context.scene.jbeam.export_mode == 'jbeam':
                                 jbeam_file.write('\t\t')
 
                             node_index1 = ([n.id for n in sorted_nodes].index(vertices[0]))
@@ -449,10 +444,10 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                             return {'CANCELLED'}
 
-                    if not context.scene.jbeam.listbn:
+                    if context.scene.jbeam.export_mode == 'jbeam':
                         jbeam_file.write('\t],\n')
 
-                if not context.scene.jbeam.listbn:
+                if context.scene.jbeam.export_mode == 'jbeam':
                     jbeam_file.write('},\n}')
 
                 jbeam_file.flush()

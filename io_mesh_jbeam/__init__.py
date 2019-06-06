@@ -188,22 +188,26 @@ class PANEL_PT_jbeam_export(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
-        layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text="Export JBeam")
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
 
-        row = layout.row()
-        row.alignment = 'CENTER'
+        layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text="Export JBeam")
 
         row = layout.row()
         row.alert = len(scene.jbeam.export_path) == 0
         row.prop(scene.jbeam, "export_path")
 
         row = layout.row()
-        row.prop(scene.jbeam, "listbn")
-        row.prop(scene.jbeam, "exp_ef")
+        row.prop(scene.jbeam, "export_mode", expand=True)
 
-        row = layout.row()
-        row.prop(scene.jbeam, "exp_tricol")
-        row.prop(scene.jbeam, "exp_diag")
+        flow = layout.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=True)
+
+        column = flow.column()
+        column.prop(scene.jbeam, "export_collision_triangles")
+        column = flow.column()
+        column.prop(scene.jbeam, "export_edges_from_faces")
+        column = flow.column()
+        column.prop(scene.jbeam, "export_face_diagonals")
 
         row = layout.row()
         row.prop(scene.jbeam, "author_names")
@@ -214,19 +218,20 @@ class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
         name="Export Path",
         description="Where all the .jbeam files will be saved",
         subtype='DIR_PATH')
-    listbn: bpy.props.BoolProperty(
-        name="List",
-        description="Export has a list of nodes and beams\nElse export as a JBeam file",
-        default=False)
-    exp_ef: bpy.props.BoolProperty(
-        name="Edges From Faces",
-        description="Export edges from faces",
-        default=True)
-    exp_tricol: bpy.props.BoolProperty(
+    export_mode: bpy.props.EnumProperty(
+        name="Export Mode",
+        items=[("jbeam", "JBeam", "Export as a JBeam file"),
+               ("list", "List", "Export as a bare list of nodes, beams and collision triangles"),
+               ])
+    export_collision_triangles: bpy.props.BoolProperty(
         name="Collision Triangles",
         description="Export faces to collision triangles",
         default=True)
-    exp_diag: bpy.props.BoolProperty(
+    export_edges_from_faces: bpy.props.BoolProperty(
+        name="Edges From Faces",
+        description="Export edges from faces",
+        default=True)
+    export_face_diagonals: bpy.props.BoolProperty(
         name="Diagonal Quad Faces",
         description="Edge on quad face (automatic diagonals)",
         default=True)
@@ -280,6 +285,9 @@ class PANEL_PT_jbeam_object(bpy.types.Panel):
             col.prop(object_data.jbeam, "name")
             col.prop(object_data.jbeam, "value")
             col.prop(object_data.jbeam, "slot")
+
+            col.separator()
+
             col.prop(object_data.jbeam, "node_prefix")
 
 
