@@ -25,6 +25,7 @@ import struct
 import bpy
 from bpy import ops
 from bpy.props import (BoolProperty,
+                       IntProperty,
                        FloatProperty,
                        StringProperty,
                        EnumProperty,
@@ -224,18 +225,27 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                 jbeam_file = open(self.filepath + filename, 'wt')
 
                 if not context.scene.jbeam.listbn:
-                    author = 'Blender JBeam Exporter v' + print_version()
+                    authors = 'Blender JBeam Exporter v' + print_version()
 
-                    if context.scene.jbeam.author_name and len(context.scene.jbeam.author_name) > 0:
-                        author = context.scene.jbeam.author_name + ", " + author
+                    if context.scene.jbeam.author_names and len(context.scene.jbeam.author_names) > 0:
+                        authors = context.scene.jbeam.author_names + ", " + authors
                     if '.jbeam' in export_object.name:
                         name = export_object.name[0:len(export_object.name) - 6]
                     else:
                         name = export_object.name
 
                     jbeam_file.write(
-                        '{\n\t"%s":{\n\t\t"information":{\n\t\t\t"name":"%s",\n\t\t\t"authors":"%s"},\n\t\t"slotType":"%s",\n' % (
-                            name, export_object.data.jbeam.name, author, export_object.data.jbeam.slot))
+                        '{\n\t"%s":{\n\t\t"information":{'
+                        '\n\t\t\t"authors":"%s"'
+                        '\n\t\t\t"name":"%s",'
+                        '\n\t\t\t"value":"%s",'
+                        '\n\t\t},'
+                        '\n\t\t"slotType":"%s",\n' % (
+                            name,
+                            authors,
+                            export_object.data.jbeam.name,
+                            export_object.data.jbeam.value,
+                            export_object.data.jbeam.slot))
 
                 mesh.update(calc_edges=True, calc_loop_triangles=True)
 

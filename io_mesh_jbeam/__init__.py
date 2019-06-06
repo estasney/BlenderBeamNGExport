@@ -102,7 +102,7 @@ class BeamGen(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='EDIT')
 
         self.report({'INFO'}, 'BeamGen successfully created ' +
-                              str(edge_count) + (' edge' if edge_count == 1 else ' edges'))
+                    str(edge_count) + (' edge' if edge_count == 1 else ' edges'))
         return {'FINISHED'}
 
 
@@ -206,7 +206,7 @@ class PANEL_PT_jbeam_export(bpy.types.Panel):
         row.prop(scene.jbeam, "exp_diag")
 
         row = layout.row()
-        row.prop(scene.jbeam, "author_name")
+        row.prop(scene.jbeam, "author_names")
 
 
 class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
@@ -234,9 +234,9 @@ class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
         name="Incompatible type",
         description="This type of object is not compatible with the exporter. Use mesh type please.",
         default=True)
-    author_name: bpy.props.StringProperty(
-        name="Author",
-        description="Your name here")
+    author_names: bpy.props.StringProperty(
+        name="Authors",
+        description="Author names")
 
 
 class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
@@ -244,6 +244,10 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
         name="Name",
         description="Part name",
         default="")
+    value: bpy.props.IntProperty(
+        name="Value",
+        description="Part cost",
+        min=0)
     slot: bpy.props.StringProperty(
         name="Slot",
         description="Slot name for this part",
@@ -263,20 +267,20 @@ class PANEL_PT_jbeam_object(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+
         if not context.active_object.type == "MESH":
             row = layout.row()
             row.prop(context.scene.jbeam, "incompatible")
         else:
             object_data = context.active_object.data
 
-            row = layout.row()
-            row.prop(object_data.jbeam, "name")
-
-            row = layout.row()
-            row.prop(object_data.jbeam, "slot")
-
-            row = layout.row()
-            row.prop(object_data.jbeam, "node_prefix")
+            col = layout.column()
+            col.prop(object_data.jbeam, "name")
+            col.prop(object_data.jbeam, "value")
+            col.prop(object_data.jbeam, "slot")
+            col.prop(object_data.jbeam, "node_prefix")
 
 
 classes = (
