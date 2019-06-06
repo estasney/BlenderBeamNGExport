@@ -235,12 +235,12 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                         name = export_object.name
 
                     jbeam_file.write(
-                        '{\n\t"%s":{\n\t\t"information":{'
-                        '\n\t\t\t"authors":"%s"'
-                        '\n\t\t\t"name":"%s",'
-                        '\n\t\t\t"value":"%s",'
-                        '\n\t\t},'
-                        '\n\t\t"slotType":"%s",\n' % (
+                        '{\n"%s":{\n\t"information":{'
+                        '\n\t\t"authors":"%s",'
+                        '\n\t\t"name":"%s",'
+                        '\n\t\t"value":%s,'
+                        '\n\t},'
+                        '\n\t"slotType":"%s",\n' % (
                             name,
                             authors,
                             export_object.data.jbeam.name,
@@ -254,7 +254,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                 jbeam_file.write(new_line)
 
                 if not context.scene.jbeam.listbn:
-                    jbeam_file.write('\t\t"nodes":[\n\t\t\t["id", "posX", "posY", "posZ"],\n')
+                    jbeam_file.write('\t"nodes":[\n\t\t["id", "posX", "posY", "posZ"],\n')
 
                 current_node_group_index = -2
 
@@ -273,12 +273,14 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                 for vertex in sorted_nodes:
                     if current_node_group_index != get_vertex_group_id(vertex.groups):
                         current_node_group_index = get_vertex_group_id(vertex.groups)
+
                         if not context.scene.jbeam.listbn:
-                            jbeam_file.write('\t\t\t')
+                            jbeam_file.write('\t\t')
+
                         jbeam_file.write('{"group":"%s"},\n' % (get_vertex_group_name(vertex.groups)))
 
                     if not context.scene.jbeam.listbn:
-                        jbeam_file.write('\t\t\t')
+                        jbeam_file.write('\t\t')
 
                     jbeam_file.write('[\"')
 
@@ -305,24 +307,24 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                 if current_node_group_index != -1:
                     if not context.scene.jbeam.listbn:
-                        jbeam_file.write('\t\t\t')
+                        jbeam_file.write('\t\t')
 
                     jbeam_file.write('{"group":""},\n')
 
                 if not context.scene.jbeam.listbn:
-                    jbeam_file.write('\t\t],\n')
+                    jbeam_file.write('\t],\n')
 
                 jbeam_file.write('//--Beams--')
                 jbeam_file.write(new_line)
 
                 if not context.scene.jbeam.listbn:
-                    jbeam_file.write('\t\t"beams":[\n\t\t\t["id1:", "id2:"],\n')
+                    jbeam_file.write('\t"beams":[\n\t\t["id1:", "id2:"],\n')
 
                 for e in mesh.edges:
                     if context.scene.jbeam.listbn:
                         jbeam_file.write('[\"')
                     else:
-                        jbeam_file.write('\t\t\t[\"')
+                        jbeam_file.write('\t\t[\"')
 
                     node_index1 = ([n.id for n in sorted_nodes].index(e.vertices[0]))
                     jbeam_file.write('%s\"' % sorted_nodes[node_index1].node_name)
@@ -349,11 +351,11 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                                 jbeam_file.write('["%s","%s"],\n' % (
                                     sorted_nodes[node_index3].node_name, sorted_nodes[node_index1].node_name))
                             else:
-                                jbeam_file.write('\t\t\t["%s","%s"],\n' % (
+                                jbeam_file.write('\t\t["%s","%s"],\n' % (
                                     sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name))
-                                jbeam_file.write('\t\t\t["%s","%s"],\n' % (
+                                jbeam_file.write('\t\t["%s","%s"],\n' % (
                                     sorted_nodes[node_index2].node_name, sorted_nodes[node_index3].node_name))
-                                jbeam_file.write('\t\t\t["%s","%s"],\n' % (
+                                jbeam_file.write('\t\t["%s","%s"],\n' % (
                                     sorted_nodes[node_index3].node_name, sorted_nodes[node_index1].node_name))
 
                         elif len(vertices) == 4:
@@ -373,13 +375,13 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                                     sorted_nodes[node_index4].node_name, sorted_nodes[node_index1].node_name))
 
                             else:
-                                jbeam_file.write('\t\t\t["%s","%s"],\n' % (
+                                jbeam_file.write('\t\t["%s","%s"],\n' % (
                                     sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name))
-                                jbeam_file.write('\t\t\t["%s","%s"],\n' % (
+                                jbeam_file.write('\t\t["%s","%s"],\n' % (
                                     sorted_nodes[node_index2].node_name, sorted_nodes[node_index3].node_name))
-                                jbeam_file.write('\t\t\t["%s","%s"],\n' % (
+                                jbeam_file.write('\t\t["%s","%s"],\n' % (
                                     sorted_nodes[node_index3].node_name, sorted_nodes[node_index4].node_name))
-                                jbeam_file.write('\t\t\t["%s","%s"],\n' % (
+                                jbeam_file.write('\t\t["%s","%s"],\n' % (
                                     sorted_nodes[node_index4].node_name, sorted_nodes[node_index1].node_name))
 
                             if context.scene.jbeam.exp_diag:
@@ -389,9 +391,9 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                                     jbeam_file.write('["%s","%s"],\n' % (
                                         sorted_nodes[node_index2].node_name, sorted_nodes[node_index4].node_name))
                                 else:
-                                    jbeam_file.write('\t\t\t["%s","%s"],\n' % (
+                                    jbeam_file.write('\t\t["%s","%s"],\n' % (
                                         sorted_nodes[node_index1].node_name, sorted_nodes[node_index3].node_name))
-                                    jbeam_file.write('\t\t\t["%s","%s"],\n' % (
+                                    jbeam_file.write('\t\t["%s","%s"],\n' % (
                                         sorted_nodes[node_index2].node_name, sorted_nodes[node_index4].node_name))
 
                         else:
@@ -408,7 +410,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                             return {'CANCELLED'}
 
                 if not context.scene.jbeam.listbn:
-                    jbeam_file.write('\t\t],\n')
+                    jbeam_file.write('\t],\n')
 
                 if context.scene.jbeam.exp_tricol:
                     jbeam_file.write('//--Collision Triangles--')
@@ -417,7 +419,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier="tricol")
 
                     if not context.scene.jbeam.listbn:
-                        jbeam_file.write('\t\t"triangles":[\n\t\t\t["id1:", "id2:", "id3:"],\n')
+                        jbeam_file.write('\t"triangles":[\n\t\t["id1:", "id2:", "id3:"],\n')
 
                     mesh = temp_object.data
                     mesh.update(calc_edges=True, calc_loop_triangles=True)
@@ -427,7 +429,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                         if len(vertices) == 3:
                             if not context.scene.jbeam.listbn:
-                                jbeam_file.write('\t\t\t')
+                                jbeam_file.write('\t\t')
 
                             node_index1 = ([n.id for n in sorted_nodes].index(vertices[0]))
                             node_index2 = ([n.id for n in sorted_nodes].index(vertices[1]))
@@ -448,10 +450,10 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                             return {'CANCELLED'}
 
                     if not context.scene.jbeam.listbn:
-                        jbeam_file.write('\t\t],\n')
+                        jbeam_file.write('\t],\n')
 
                 if not context.scene.jbeam.listbn:
-                    jbeam_file.write('\t}\n}')
+                    jbeam_file.write('},\n}')
 
                 jbeam_file.flush()
                 jbeam_file.close()
