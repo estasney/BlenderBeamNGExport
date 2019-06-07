@@ -244,70 +244,71 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                 mesh.update(calc_edges=True, calc_loop_triangles=True)
 
-                i = 0
-                jbeam_file.write('//--Nodes--')
-                jbeam_file.write(new_line)
+                if context.scene.jbeam.export_nodes:
+                    i = 0
+                    jbeam_file.write('//--Nodes--')
+                    jbeam_file.write(new_line)
 
-                if context.scene.jbeam.export_mode == 'jbeam':
-                    jbeam_file.write('\t"nodes":[\n\t\t["id", "posX", "posY", "posZ"],\n')
+                    if context.scene.jbeam.export_mode == 'jbeam':
+                        jbeam_file.write('\t"nodes":[\n\t\t["id", "posX", "posY", "posZ"],\n')
 
-                current_node_group_index = -2
+                    current_node_group_index = -2
 
-                def get_vertex_group_id(groups):
-                    if len(groups) == 0:
-                        return -1
-                    else:
-                        return groups[0].group
+                    def get_vertex_group_id(groups):
+                        if len(groups) == 0:
+                            return -1
+                        else:
+                            return groups[0].group
 
-                def get_vertex_group_name(groups):
-                    if len(groups) == 0:
-                        return ""
-                    else:
-                        return selected_object.vertex_groups[groups[0].group].name
+                    def get_vertex_group_name(groups):
+                        if len(groups) == 0:
+                            return ""
+                        else:
+                            return selected_object.vertex_groups[groups[0].group].name
 
-                for vertex in sorted_nodes:
-                    if current_node_group_index != get_vertex_group_id(vertex.groups):
-                        current_node_group_index = get_vertex_group_id(vertex.groups)
+                    for vertex in sorted_nodes:
+                        if current_node_group_index != get_vertex_group_id(vertex.groups):
+                            current_node_group_index = get_vertex_group_id(vertex.groups)
+
+                            if context.scene.jbeam.export_mode == 'jbeam':
+                                jbeam_file.write('\t\t')
+
+                            jbeam_file.write('{"group":"%s"},\n' % (get_vertex_group_name(vertex.groups)))
 
                         if context.scene.jbeam.export_mode == 'jbeam':
                             jbeam_file.write('\t\t')
 
-                        jbeam_file.write('{"group":"%s"},\n' % (get_vertex_group_name(vertex.groups)))
+                        jbeam_file.write('[\"')
+
+                        if vertex.x > 0:
+                            vertex.node_name = vertex.node_name + 'l' + ('%s' % i)
+                        elif vertex.x < 0:
+                            vertex.node_name = vertex.node_name + 'r' + ('%s' % i)
+                        else:
+                            vertex.node_name = vertex.node_name + ('%s' % i)
+
+                        jbeam_file.write(vertex.node_name)
+                        jbeam_file.write('\",')
+                        jbeam_file.write('%s' % (round(vertex.x + export_object.delta_location[0], 3)))
+                        jbeam_file.write(',')
+                        jbeam_file.write('%s' % (round(vertex.y + export_object.delta_location[1], 3)))
+                        jbeam_file.write(',')
+                        jbeam_file.write('%s' % (round(vertex.z + export_object.delta_location[2], 3)))
+                        jbeam_file.write('],')
+
+                        # to debug groups
+                        # jbeam_file.write('//grp[%d]="%s"' % (get_vertex_group_id(vertex.groups), get_vertex_group_name(vertex.groups)) )
+                        jbeam_file.write(new_line)
+                        i += 1
+
+                    if current_node_group_index != -1:
+                        if context.scene.jbeam.export_mode == 'jbeam':
+                            jbeam_file.write('\t\t')
+
+                        jbeam_file.write('{"group":""},\n')
 
                     if context.scene.jbeam.export_mode == 'jbeam':
-                        jbeam_file.write('\t\t')
-
-                    jbeam_file.write('[\"')
-
-                    if vertex.x > 0:
-                        vertex.node_name = vertex.node_name + 'l' + ('%s' % i)
-                    elif vertex.x < 0:
-                        vertex.node_name = vertex.node_name + 'r' + ('%s' % i)
-                    else:
-                        vertex.node_name = vertex.node_name + ('%s' % i)
-
-                    jbeam_file.write(vertex.node_name)
-                    jbeam_file.write('\",')
-                    jbeam_file.write('%s' % (round(vertex.x + export_object.delta_location[0], 3)))
-                    jbeam_file.write(',')
-                    jbeam_file.write('%s' % (round(vertex.y + export_object.delta_location[1], 3)))
-                    jbeam_file.write(',')
-                    jbeam_file.write('%s' % (round(vertex.z + export_object.delta_location[2], 3)))
-                    jbeam_file.write('],')
-
-                    # to debug groups
-                    # jbeam_file.write('//grp[%d]="%s"' % (get_vertex_group_id(vertex.groups), get_vertex_group_name(vertex.groups)) )
-                    jbeam_file.write(new_line)
-                    i += 1
-
-                if current_node_group_index != -1:
-                    if context.scene.jbeam.export_mode == 'jbeam':
-                        jbeam_file.write('\t\t')
-
-                    jbeam_file.write('{"group":""},\n')
-
-                if context.scene.jbeam.export_mode == 'jbeam':
-                    jbeam_file.write('\t],\n')
+                        jbeam_file.write('\t],\n')
 
                 jbeam_file.write('//--Beams--')
                 jbeam_file.write(new_line)
