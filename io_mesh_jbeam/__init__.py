@@ -285,6 +285,51 @@ class PANEL_PT_jbeam_scene_collision_triangles(bpy.types.Panel):
         column.label(text="No properties yet.")
 
 
+class PANEL_PT_jbeam_object(bpy.types.Panel):
+    bl_label = "JBeam Properties"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "data"
+    bl_default_closed = True
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+
+        if not context.active_object.type == "MESH":
+            row = layout.row()
+            row.prop(context.scene.jbeam, "incompatible")
+        else:
+            object_data = context.active_object.data
+
+            col = layout.column()
+            col.prop(object_data.jbeam, "name")
+            col.prop(object_data.jbeam, "value")
+            col.prop(object_data.jbeam, "slot")
+
+
+class PANEL_PT_jbeam_object_nodes(bpy.types.Panel):
+    bl_label = "Nodes"
+    bl_parent_id = "PANEL_PT_jbeam_object"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw_header(self, context):
+        self.layout.prop(context.active_object.data.jbeam, "export_nodes", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        active_object = context.active_object
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+        layout.active = active_object.data.jbeam.export_nodes
+
+        col = layout.column()
+        col.prop(active_object.data.jbeam, "node_prefix")
+
+
 class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
     export_path: bpy.props.StringProperty(
         name="Export Path",
@@ -341,34 +386,10 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
         name="Nodes Prefix",
         description="String prefix used for node names",
         default="n")
-
-
-class PANEL_PT_jbeam_object(bpy.types.Panel):
-    bl_label = "JBeam Properties"
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "data"
-    bl_default_closed = True
-
-    def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True  # Active single-column layout
-        layout.use_property_decorate = False
-
-        if not context.active_object.type == "MESH":
-            row = layout.row()
-            row.prop(context.scene.jbeam, "incompatible")
-        else:
-            object_data = context.active_object.data
-
-            col = layout.column()
-            col.prop(object_data.jbeam, "name")
-            col.prop(object_data.jbeam, "value")
-            col.prop(object_data.jbeam, "slot")
-
-            col.separator()
-
-            col.prop(object_data.jbeam, "node_prefix")
+    export_nodes: bpy.props.BoolProperty(
+        name="Nodes",
+        description="Export vertices to nodes",
+        default=True)
 
 
 classes = (
@@ -378,6 +399,7 @@ classes = (
     PROPERTIES_PG_jbeam_scene,
     PROPERTIES_PG_jbeam_object,
     PANEL_PT_jbeam_object,
+    PANEL_PT_jbeam_object_nodes,
     PANEL_PT_jbeam_scene_information,
     PANEL_PT_jbeam_scene_nodes,
     PANEL_PT_jbeam_scene_beams,

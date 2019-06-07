@@ -21,15 +21,8 @@
 # <pep8-80 compliant>
 
 import os
-import struct
 import bpy
 from bpy import ops
-from bpy.props import (BoolProperty,
-                       IntProperty,
-                       FloatProperty,
-                       StringProperty,
-                       EnumProperty,
-                       )
 
 from .utils import *
 
@@ -227,7 +220,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                 i = 0
 
-                if context.scene.jbeam.export_nodes:
+                if context.scene.jbeam.export_nodes and context.active_object.data.jbeam.export_nodes:
                     jbeam_file.write('//--Nodes--')
                     jbeam_file.write(new_line)
 
@@ -252,16 +245,16 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     if current_node_group_index != get_vertex_group_id(vertex.groups):
                         current_node_group_index = get_vertex_group_id(vertex.groups)
 
-                        if context.scene.jbeam.export_nodes:
+                        if context.scene.jbeam.export_nodes and context.active_object.data.jbeam.export_nodes:
                             if context.scene.jbeam.export_mode == 'jbeam':
                                 jbeam_file.write('\t\t')
 
                             jbeam_file.write('{"group":"%s"},\n' % (get_vertex_group_name(vertex.groups)))
 
-                    if context.scene.jbeam.export_nodes and context.scene.jbeam.export_mode == 'jbeam':
+                    if context.scene.jbeam.export_nodes and context.active_object.data.jbeam.export_nodes and context.scene.jbeam.export_mode == 'jbeam':
                         jbeam_file.write('\t\t')
 
-                    if context.scene.jbeam.export_nodes:
+                    if context.scene.jbeam.export_nodes and context.active_object.data.jbeam.export_nodes:
                         jbeam_file.write('[\"')
 
                     if vertex.x > 0:
@@ -271,7 +264,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     else:
                         vertex.node_name = vertex.node_name + ('%s' % i)
 
-                    if context.scene.jbeam.export_nodes:
+                    if context.scene.jbeam.export_nodes and context.active_object.data.jbeam.export_nodes:
                         jbeam_file.write(vertex.node_name)
                         jbeam_file.write('\",')
                         jbeam_file.write('%s' % (round(vertex.x + export_object.delta_location[0], 3)))
@@ -281,14 +274,14 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                         jbeam_file.write('%s' % (round(vertex.z + export_object.delta_location[2], 3)))
                         jbeam_file.write('],')
 
-                    if context.scene.jbeam.export_nodes:
+                    if context.scene.jbeam.export_nodes and context.active_object.data.jbeam.export_nodes:
                         # to debug groups
                         # jbeam_file.write('//grp[%d]="%s"' % (get_vertex_group_id(vertex.groups), get_vertex_group_name(vertex.groups)) )
                         jbeam_file.write(new_line)
 
                     i += 1
 
-                if context.scene.jbeam.export_nodes:
+                if context.scene.jbeam.export_nodes and context.active_object.data.jbeam.export_nodes:
                     if current_node_group_index != -1:
                         if context.scene.jbeam.export_mode == 'jbeam':
                             jbeam_file.write('\t\t')
