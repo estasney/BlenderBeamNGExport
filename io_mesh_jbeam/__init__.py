@@ -209,13 +209,12 @@ class PANEL_PT_jbeam_scene_information(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        scene = context.scene
 
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
 
         row = layout.row()
-        row.prop(scene.jbeam, "author_names")
+        row.prop(context.scene.jbeam, "author_names")
 
 
 class PANEL_PT_jbeam_scene_beams(bpy.types.Panel):
@@ -239,7 +238,9 @@ class PANEL_PT_jbeam_scene_beams(bpy.types.Panel):
 
         column = flow.column()
         column.prop(scene.jbeam, "export_edges_from_faces")
+
         column = flow.column()
+        column.active = scene.jbeam.export_edges_from_faces
         column.prop(scene.jbeam, "export_face_diagonals")
 
 
@@ -254,11 +255,10 @@ class PANEL_PT_jbeam_scene_collision_triangles(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        scene = context.scene
 
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
-        layout.active = scene.jbeam.export_collision_triangles
+        layout.active = context.scene.jbeam.export_collision_triangles
 
         column = layout.column()
         column.label(text="No properties yet.")
