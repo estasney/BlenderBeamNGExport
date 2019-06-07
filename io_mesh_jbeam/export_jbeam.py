@@ -49,29 +49,10 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
     bl_description = 'Export for use in BeamNG.drive (.jbeam)'
     bl_label = 'Export JBeam'
 
-    # From ExportHelper. Filter filenames.
-    filename_ext = ".jbeam"
-    filter_glob: StringProperty(default="*.jbeam", options={'HIDDEN'})
-
     filepath: bpy.props.StringProperty(
         name="File Path",
         description="File path used for exporting the JBeam file",
         maxlen=1024, default="")
-
-    export_edges_from_faces: bpy.props.BoolProperty(
-        name="Export edge from face",
-        description="",
-        default=True)
-
-    export_collision_triangles: bpy.props.BoolProperty(
-        name="Export Faces to collision triangle",
-        description="",
-        default=True)
-
-    export_face_diagonals: bpy.props.BoolProperty(
-        name="Edge on quad face",
-        description="",
-        default=True)
 
     export_scene: bpy.props.BoolProperty(
         name="scene_export",
