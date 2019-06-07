@@ -204,13 +204,34 @@ class PANEL_PT_jbeam_export(bpy.types.Panel):
 
         column = flow.column()
         column.prop(scene.jbeam, "export_collision_triangles")
+
+        row = layout.row()
+        row.prop(scene.jbeam, "author_names")
+
+
+class PANEL_PT_jbeam_scene_beams(bpy.types.Panel):
+    bl_label = "Beams"
+    bl_parent_id = "PANEL_PT_jbeam_export"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw_header(self, context):
+        self.layout.prop(context.scene.jbeam, "export_beams", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+        layout.active = scene.jbeam.export_beams
+
+        flow = layout.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=True)
+
         column = flow.column()
         column.prop(scene.jbeam, "export_edges_from_faces")
         column = flow.column()
         column.prop(scene.jbeam, "export_face_diagonals")
-
-        row = layout.row()
-        row.prop(scene.jbeam, "author_names")
 
 
 class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
@@ -223,6 +244,10 @@ class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
         items=[("jbeam", "JBeam", "Export as a JBeam file"),
                ("list", "List", "Export as a bare list of nodes, beams and collision triangles"),
                ])
+    export_beams: bpy.props.BoolProperty(
+        name="Beams",
+        description="Export edges to beams",
+        default=True)
     export_collision_triangles: bpy.props.BoolProperty(
         name="Collision Triangles",
         description="Export faces to collision triangles",
@@ -298,6 +323,7 @@ classes = (
     PROPERTIES_PG_jbeam_scene,
     PROPERTIES_PG_jbeam_object,
     PANEL_PT_jbeam_object,
+    PANEL_PT_jbeam_scene_beams,
     export_jbeam.SCRIPT_OT_jbeam_export,
     updater.SCRIPT_OT_jbeam_update,
     updater.MENU_MT_jbeam_updated
