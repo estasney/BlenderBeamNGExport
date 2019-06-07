@@ -310,103 +310,104 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     if context.scene.jbeam.export_mode == 'jbeam':
                         jbeam_file.write('\t],\n')
 
-                jbeam_file.write('//--Beams--')
-                jbeam_file.write(new_line)
-
-                if context.scene.jbeam.export_mode == 'jbeam':
-                    jbeam_file.write('\t"beams":[\n\t\t["id1:", "id2:"],\n')
-
-                for e in mesh.edges:
-                    if context.scene.jbeam.export_mode == 'list':
-                        jbeam_file.write('[\"')
-                    else:
-                        jbeam_file.write('\t\t[\"')
-
-                    node_index1 = ([n.id for n in sorted_nodes].index(e.vertices[0]))
-                    jbeam_file.write('%s\"' % sorted_nodes[node_index1].node_name)
-                    jbeam_file.write(',')
-                    node_index2 = ([n.id for n in sorted_nodes].index(e.vertices[1]))
-                    jbeam_file.write('\"%s\"' % sorted_nodes[node_index2].node_name)
-                    jbeam_file.write('],')
+                if context.scene.jbeam.export_beams:
+                    jbeam_file.write('//--Beams--')
                     jbeam_file.write(new_line)
 
-                if context.scene.jbeam.export_edges_from_faces:
-                    for face in mesh.polygons:
-                        vertices = face.vertices
+                    if context.scene.jbeam.export_mode == 'jbeam':
+                        jbeam_file.write('\t"beams":[\n\t\t["id1:", "id2:"],\n')
 
-                        if len(vertices) == 3:
-                            node_index1 = ([n.id for n in sorted_nodes].index(vertices[0]))
-                            node_index2 = ([n.id for n in sorted_nodes].index(vertices[1]))
-                            node_index3 = ([n.id for n in sorted_nodes].index(vertices[2]))
+                    for e in mesh.edges:
+                        if context.scene.jbeam.export_mode == 'list':
+                            jbeam_file.write('[\"')
+                        else:
+                            jbeam_file.write('\t\t[\"')
 
-                            if context.scene.jbeam.export_mode == 'list':
-                                jbeam_file.write('["%s","%s"],\n' % (
-                                    sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name))
-                                jbeam_file.write('["%s","%s"],\n' % (
-                                    sorted_nodes[node_index2].node_name, sorted_nodes[node_index3].node_name))
-                                jbeam_file.write('["%s","%s"],\n' % (
-                                    sorted_nodes[node_index3].node_name, sorted_nodes[node_index1].node_name))
-                            else:
-                                jbeam_file.write('\t\t["%s","%s"],\n' % (
-                                    sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name))
-                                jbeam_file.write('\t\t["%s","%s"],\n' % (
-                                    sorted_nodes[node_index2].node_name, sorted_nodes[node_index3].node_name))
-                                jbeam_file.write('\t\t["%s","%s"],\n' % (
-                                    sorted_nodes[node_index3].node_name, sorted_nodes[node_index1].node_name))
+                        node_index1 = ([n.id for n in sorted_nodes].index(e.vertices[0]))
+                        jbeam_file.write('%s\"' % sorted_nodes[node_index1].node_name)
+                        jbeam_file.write(',')
+                        node_index2 = ([n.id for n in sorted_nodes].index(e.vertices[1]))
+                        jbeam_file.write('\"%s\"' % sorted_nodes[node_index2].node_name)
+                        jbeam_file.write('],')
+                        jbeam_file.write(new_line)
 
-                        elif len(vertices) == 4:
-                            node_index1 = ([n.id for n in sorted_nodes].index(vertices[0]))
-                            node_index2 = ([n.id for n in sorted_nodes].index(vertices[1]))
-                            node_index3 = ([n.id for n in sorted_nodes].index(vertices[2]))
-                            node_index4 = ([n.id for n in sorted_nodes].index(vertices[3]))
+                    if context.scene.jbeam.export_edges_from_faces:
+                        for face in mesh.polygons:
+                            vertices = face.vertices
+    
+                            if len(vertices) == 3:
+                                node_index1 = ([n.id for n in sorted_nodes].index(vertices[0]))
+                                node_index2 = ([n.id for n in sorted_nodes].index(vertices[1]))
+                                node_index3 = ([n.id for n in sorted_nodes].index(vertices[2]))
 
-                            if context.scene.jbeam.export_mode == 'list':
-                                jbeam_file.write('["%s","%s"],\n' % (
-                                    sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name))
-                                jbeam_file.write('["%s","%s"],\n' % (
-                                    sorted_nodes[node_index2].node_name, sorted_nodes[node_index3].node_name))
-                                jbeam_file.write('["%s","%s"],\n' % (
-                                    sorted_nodes[node_index3].node_name, sorted_nodes[node_index4].node_name))
-                                jbeam_file.write('["%s","%s"],\n' % (
-                                    sorted_nodes[node_index4].node_name, sorted_nodes[node_index1].node_name))
-
-                            else:
-                                jbeam_file.write('\t\t["%s","%s"],\n' % (
-                                    sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name))
-                                jbeam_file.write('\t\t["%s","%s"],\n' % (
-                                    sorted_nodes[node_index2].node_name, sorted_nodes[node_index3].node_name))
-                                jbeam_file.write('\t\t["%s","%s"],\n' % (
-                                    sorted_nodes[node_index3].node_name, sorted_nodes[node_index4].node_name))
-                                jbeam_file.write('\t\t["%s","%s"],\n' % (
-                                    sorted_nodes[node_index4].node_name, sorted_nodes[node_index1].node_name))
-
-                            if context.scene.jbeam.export_face_diagonals:
                                 if context.scene.jbeam.export_mode == 'list':
                                     jbeam_file.write('["%s","%s"],\n' % (
-                                        sorted_nodes[node_index1].node_name, sorted_nodes[node_index3].node_name))
+                                        sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name))
                                     jbeam_file.write('["%s","%s"],\n' % (
-                                        sorted_nodes[node_index2].node_name, sorted_nodes[node_index4].node_name))
+                                        sorted_nodes[node_index2].node_name, sorted_nodes[node_index3].node_name))
+                                    jbeam_file.write('["%s","%s"],\n' % (
+                                        sorted_nodes[node_index3].node_name, sorted_nodes[node_index1].node_name))
                                 else:
                                     jbeam_file.write('\t\t["%s","%s"],\n' % (
-                                        sorted_nodes[node_index1].node_name, sorted_nodes[node_index3].node_name))
+                                        sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name))
                                     jbeam_file.write('\t\t["%s","%s"],\n' % (
-                                        sorted_nodes[node_index2].node_name, sorted_nodes[node_index4].node_name))
+                                        sorted_nodes[node_index2].node_name, sorted_nodes[node_index3].node_name))
+                                    jbeam_file.write('\t\t["%s","%s"],\n' % (
+                                        sorted_nodes[node_index3].node_name, sorted_nodes[node_index1].node_name))
 
-                        else:
-                            self.report({'ERROR'},
-                                        'ERROR: Mesh contains Ngons, only triangles and quads are supported.')
+                            elif len(vertices) == 4:
+                                node_index1 = ([n.id for n in sorted_nodes].index(vertices[0]))
+                                node_index2 = ([n.id for n in sorted_nodes].index(vertices[1]))
+                                node_index3 = ([n.id for n in sorted_nodes].index(vertices[2]))
+                                node_index4 = ([n.id for n in sorted_nodes].index(vertices[3]))
 
-                            if jbeam_file:
-                                jbeam_file.close()
+                                if context.scene.jbeam.export_mode == 'list':
+                                    jbeam_file.write('["%s","%s"],\n' % (
+                                        sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name))
+                                    jbeam_file.write('["%s","%s"],\n' % (
+                                        sorted_nodes[node_index2].node_name, sorted_nodes[node_index3].node_name))
+                                    jbeam_file.write('["%s","%s"],\n' % (
+                                        sorted_nodes[node_index3].node_name, sorted_nodes[node_index4].node_name))
+                                    jbeam_file.write('["%s","%s"],\n' % (
+                                        sorted_nodes[node_index4].node_name, sorted_nodes[node_index1].node_name))
 
-                            if temp_object:
-                                scene.objects.unlink(temp_object)
-                                bpy.data.objects.remove(temp_object)
+                                else:
+                                    jbeam_file.write('\t\t["%s","%s"],\n' % (
+                                        sorted_nodes[node_index1].node_name, sorted_nodes[node_index2].node_name))
+                                    jbeam_file.write('\t\t["%s","%s"],\n' % (
+                                        sorted_nodes[node_index2].node_name, sorted_nodes[node_index3].node_name))
+                                    jbeam_file.write('\t\t["%s","%s"],\n' % (
+                                        sorted_nodes[node_index3].node_name, sorted_nodes[node_index4].node_name))
+                                    jbeam_file.write('\t\t["%s","%s"],\n' % (
+                                        sorted_nodes[node_index4].node_name, sorted_nodes[node_index1].node_name))
 
-                            return {'CANCELLED'}
+                                if context.scene.jbeam.export_face_diagonals:
+                                    if context.scene.jbeam.export_mode == 'list':
+                                        jbeam_file.write('["%s","%s"],\n' % (
+                                            sorted_nodes[node_index1].node_name, sorted_nodes[node_index3].node_name))
+                                        jbeam_file.write('["%s","%s"],\n' % (
+                                            sorted_nodes[node_index2].node_name, sorted_nodes[node_index4].node_name))
+                                    else:
+                                        jbeam_file.write('\t\t["%s","%s"],\n' % (
+                                            sorted_nodes[node_index1].node_name, sorted_nodes[node_index3].node_name))
+                                        jbeam_file.write('\t\t["%s","%s"],\n' % (
+                                            sorted_nodes[node_index2].node_name, sorted_nodes[node_index4].node_name))
 
-                if context.scene.jbeam.export_mode == 'jbeam':
-                    jbeam_file.write('\t],\n')
+                            else:
+                                self.report({'ERROR'},
+                                            'ERROR: Mesh contains Ngons, only triangles and quads are supported.')
+
+                                if jbeam_file:
+                                    jbeam_file.close()
+
+                                if temp_object:
+                                    scene.objects.unlink(temp_object)
+                                    bpy.data.objects.remove(temp_object)
+
+                                return {'CANCELLED'}
+
+                    if context.scene.jbeam.export_mode == 'jbeam':
+                        jbeam_file.write('\t],\n')
 
                 if context.scene.jbeam.export_collision_triangles:
                     jbeam_file.write('//--Collision Triangles--')
