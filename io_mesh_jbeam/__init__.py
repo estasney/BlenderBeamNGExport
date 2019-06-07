@@ -191,7 +191,7 @@ class PANEL_PT_jbeam_export(bpy.types.Panel):
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
 
-        layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text="Export JBeam")
+        layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text="Export JBeam", icon="EXPORT")
 
         row = layout.row()
         row.alert = len(scene.jbeam.export_path) == 0
@@ -200,10 +200,19 @@ class PANEL_PT_jbeam_export(bpy.types.Panel):
         row = layout.row()
         row.prop(scene.jbeam, "export_mode", expand=True)
 
-        flow = layout.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=True)
 
-        column = flow.column()
-        column.prop(scene.jbeam, "export_collision_triangles")
+class PANEL_PT_jbeam_scene_information(bpy.types.Panel):
+    bl_label = "Information"
+    bl_parent_id = "PANEL_PT_jbeam_export"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
 
         row = layout.row()
         row.prop(scene.jbeam, "author_names")
@@ -232,6 +241,27 @@ class PANEL_PT_jbeam_scene_beams(bpy.types.Panel):
         column.prop(scene.jbeam, "export_edges_from_faces")
         column = flow.column()
         column.prop(scene.jbeam, "export_face_diagonals")
+
+
+class PANEL_PT_jbeam_scene_collision_triangles(bpy.types.Panel):
+    bl_label = "Collision Triangles"
+    bl_parent_id = "PANEL_PT_jbeam_export"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw_header(self, context):
+        self.layout.prop(context.scene.jbeam, "export_collision_triangles", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+        layout.active = scene.jbeam.export_collision_triangles
+
+        column = layout.column()
+        column.label(text="No properties yet.")
 
 
 class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
@@ -323,7 +353,9 @@ classes = (
     PROPERTIES_PG_jbeam_scene,
     PROPERTIES_PG_jbeam_object,
     PANEL_PT_jbeam_object,
+    PANEL_PT_jbeam_scene_information,
     PANEL_PT_jbeam_scene_beams,
+    PANEL_PT_jbeam_scene_collision_triangles,
     export_jbeam.SCRIPT_OT_jbeam_export,
     updater.SCRIPT_OT_jbeam_update,
     updater.MENU_MT_jbeam_updated
