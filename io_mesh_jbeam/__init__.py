@@ -303,7 +303,8 @@ class PANEL_PT_jbeam_object_information(bpy.types.Panel):
     bl_region_type = "WINDOW"
 
     def draw_header(self, context):
-        self.layout.prop(context.active_object.data.jbeam, "export_information", text="")
+        if context.active_object.type == "MESH":
+            self.layout.prop(context.active_object.data.jbeam, "export_information", text="")
 
     def draw(self, context):
         layout = self.layout
@@ -312,8 +313,6 @@ class PANEL_PT_jbeam_object_information(bpy.types.Panel):
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
 
-        layout.active = active_object.type == "MESH"
-
         if not active_object.type == "MESH" or not active_object.data.jbeam.export_information:
             layout.active = False
         else:  # Don't load the properties as they don't exist in the objects's data
@@ -321,7 +320,15 @@ class PANEL_PT_jbeam_object_information(bpy.types.Panel):
 
             col = layout.column()
             col.prop(object_data.jbeam, "name")
-            col.prop(object_data.jbeam, "value")
+
+            flow = layout.column_flow()
+
+            column = flow.column()
+            column.prop(active_object.data.jbeam, "export_value")
+
+            column = flow.column()
+            column.active = active_object.data.jbeam.export_value
+            column.prop(object_data.jbeam, "value", text="")
 
 
 class PANEL_PT_jbeam_object_slots(bpy.types.Panel):
@@ -337,9 +344,7 @@ class PANEL_PT_jbeam_object_slots(bpy.types.Panel):
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
 
-        layout.active = active_object.type == "MESH"
-
-        if not active_object.type == "MESH" or not active_object.data.jbeam.export_information:
+        if not active_object.type == "MESH":
             layout.active = False
         else:  # Don't load the properties as they don't exist in the objects's data
             col = layout.column()
@@ -353,7 +358,8 @@ class PANEL_PT_jbeam_object_nodes(bpy.types.Panel):
     bl_region_type = "WINDOW"
 
     def draw_header(self, context):
-        self.layout.prop(context.active_object.data.jbeam, "export_nodes", text="")
+        if context.active_object.type == "MESH":
+            self.layout.prop(context.active_object.data.jbeam, "export_nodes", text="")
 
     def draw(self, context):
         layout = self.layout
@@ -376,7 +382,8 @@ class PANEL_PT_jbeam_object_beams(bpy.types.Panel):
     bl_region_type = "WINDOW"
 
     def draw_header(self, context):
-        self.layout.prop(context.active_object.data.jbeam, "export_beams", text="")
+        if context.active_object.type == "MESH":
+            self.layout.prop(context.active_object.data.jbeam, "export_beams", text="")
 
     def draw(self, context):
         layout = self.layout
@@ -384,16 +391,18 @@ class PANEL_PT_jbeam_object_beams(bpy.types.Panel):
 
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
-        layout.active = context.active_object.data.jbeam.export_beams
 
-        flow = layout.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=True)
+        if not active_object.type == "MESH" or not active_object.data.jbeam.export_beams:
+            layout.active = False
+        else:  # Don't load the properties as they don't exist in the objects's data
+            flow = layout.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=True)
 
-        column = flow.column()
-        column.prop(active_object.data.jbeam, "export_edges_from_faces")
+            column = flow.column()
+            column.prop(active_object.data.jbeam, "export_edges_from_faces")
 
-        column = flow.column()
-        column.active = active_object.data.jbeam.export_edges_from_faces
-        column.prop(active_object.data.jbeam, "export_face_diagonals")
+            column = flow.column()
+            column.active = active_object.data.jbeam.export_edges_from_faces
+            column.prop(active_object.data.jbeam, "export_face_diagonals")
 
 
 class PANEL_PT_jbeam_object_collision_triangles(bpy.types.Panel):
@@ -403,17 +412,21 @@ class PANEL_PT_jbeam_object_collision_triangles(bpy.types.Panel):
     bl_region_type = "WINDOW"
 
     def draw_header(self, context):
-        self.layout.prop(context.active_object.data.jbeam, "export_collision_triangles", text="")
+        if context.active_object.type == "MESH":
+            self.layout.prop(context.active_object.data.jbeam, "export_collision_triangles", text="")
 
     def draw(self, context):
         layout = self.layout
+        active_object = context.active_object
 
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
-        layout.active = context.active_object.data.jbeam.export_collision_triangles
 
-        column = layout.column()
-        column.label(text="No properties yet.")
+        if not active_object.type == "MESH" or not active_object.data.jbeam.export_collision_triangles:
+            layout.active = False
+        else:  # Don't load the properties as they don't exist in the objects's data
+            column = layout.column()
+            column.label(text="No properties yet.")
 
 
 class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
@@ -476,6 +489,10 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
         name="Information",
         description="Export basic part information",
         default=True)
+    export_value: bpy.props.BoolProperty(
+        name="Value",
+        description="Enable/Disable part value (cost)",
+        default=False)
     export_nodes: bpy.props.BoolProperty(
         name="Nodes",
         description="Export vertices to nodes",

@@ -210,12 +210,14 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                         jbeam_file.write(
                             '\t"information":{\n'
                             '\t\t"authors":"%s",\n'
-                            '\t\t"name":"%s",\n'
-                            '\t\t"value":%s,\n'
-                            '\t},\n' % (
+                            '\t\t"name":"%s",\n' % (
                                 authors,
-                                export_object.data.jbeam.name,
-                                export_object.data.jbeam.value))
+                                export_object.data.jbeam.name))
+
+                        if (export_object.data.jbeam.export_value):
+                            jbeam_file.write('\t\t"value":%s,\n' % export_object.data.jbeam.value)
+
+                        jbeam_file.write('\t},\n')
 
                     jbeam_file.write('\t"slotType":"%s",\n' % export_object.data.jbeam.slot_type)
 
