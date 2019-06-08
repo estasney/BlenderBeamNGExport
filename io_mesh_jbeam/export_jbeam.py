@@ -214,7 +214,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                                 authors,
                                 export_object.data.jbeam.name))
 
-                        if (export_object.data.jbeam.export_value):
+                        if export_object.data.jbeam.export_value:
                             jbeam_file.write('\t\t"value":%s,\n' % export_object.data.jbeam.value)
 
                         jbeam_file.write('\t},\n')
@@ -233,17 +233,24 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                         jbeam_file.write('\t"nodes":[\n\t\t["id", "posX", "posY", "posZ"],\n')
 
                 current_node_group_index = -2
+                vertex_group_count = 0
 
                 for vertex in sorted_nodes:
                     if current_node_group_index != get_vertex_group_id(vertex.groups):
                         current_node_group_index = get_vertex_group_id(vertex.groups)
 
-                        if context.scene.jbeam.export_nodes and context.active_object.data.jbeam.export_nodes:
-                            if context.scene.jbeam.export_mode == 'jbeam':
-                                jbeam_file.write('\t\t')
+                        if current_node_group_index != -1:
+                            vertex_group_count += 1
 
-                            jbeam_file.write(
-                                '{"group":"%s"},\n' % (get_vertex_group_name(export_object, vertex.groups)))
+                        if context.scene.jbeam.export_node_groups and export_object.data.jbeam.export_node_groups:
+                            if context.scene.jbeam.export_nodes and export_object.data.jbeam.export_nodes:
+                                if context.scene.jbeam.export_mode == 'jbeam':
+                                    jbeam_file.write('\t\t')
+
+                                vertex_group_name = get_vertex_group_name(export_object, vertex.groups)
+
+                                jbeam_file.write(
+                                    '{"group":"%s"},\n' % (vertex_group_name if vertex_group_count != 0 else name))
 
                     if context.scene.jbeam.export_nodes and context.active_object.data.jbeam.export_nodes and context.scene.jbeam.export_mode == 'jbeam':
                         jbeam_file.write('\t\t')
@@ -276,7 +283,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     i += 1
 
                 if context.scene.jbeam.export_nodes and context.active_object.data.jbeam.export_nodes:
-                    if current_node_group_index != -1:
+                    if current_node_group_index != -1 or vertex_group_count == 0:
                         if context.scene.jbeam.export_mode == 'jbeam':
                             jbeam_file.write('\t\t')
 

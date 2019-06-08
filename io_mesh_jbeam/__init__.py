@@ -235,13 +235,14 @@ class PANEL_PT_jbeam_scene_nodes(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        scene = context.scene
 
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
-        layout.active = context.scene.jbeam.export_nodes
+        layout.active = scene.jbeam.export_nodes
 
-        column = layout.column()
-        column.label(text="No properties yet.")
+        col = layout.column()
+        col.prop(scene.jbeam, "export_node_groups")
 
 
 class PANEL_PT_jbeam_scene_beams(bpy.types.Panel):
@@ -381,6 +382,7 @@ class PANEL_PT_jbeam_object_nodes(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        scene = context.scene
         active_object = context.active_object
 
         layout.use_property_split = True  # Active single-column layout
@@ -390,10 +392,14 @@ class PANEL_PT_jbeam_object_nodes(bpy.types.Panel):
         if not active_object.type == "MESH" or not active_object.data.jbeam.export_nodes:
             layout.active = False
         else:
-            layout.active = context.scene.jbeam.export_nodes
+            layout.active = scene.jbeam.export_nodes
 
             col = layout.column()
             col.prop(active_object.data.jbeam, "node_prefix")
+
+            col = layout.column()
+            col.active = scene.jbeam.export_node_groups
+            col.prop(active_object.data.jbeam, "export_node_groups")
 
 
 class PANEL_PT_jbeam_object_beams(bpy.types.Panel):
@@ -474,6 +480,10 @@ class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
         name="Nodes",
         description="Export vertices to nodes",
         default=True)
+    export_node_groups: bpy.props.BoolProperty(
+        name="Node Groups",
+        description="Export vertex groups to node groups",
+        default=True)
     export_beams: bpy.props.BoolProperty(
         name="Beams",
         description="Export edges to beams",
@@ -523,6 +533,10 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
     export_nodes: bpy.props.BoolProperty(
         name="Nodes",
         description="Export vertices to nodes",
+        default=True)
+    export_node_groups: bpy.props.BoolProperty(
+        name="Node Groups",
+        description="Export vertex groups to node groups",
         default=True)
     export_beams: bpy.props.BoolProperty(
         name="Beams",
