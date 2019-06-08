@@ -203,18 +203,20 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     else:
                         name = export_object.name
 
-                    jbeam_file.write(
-                        '{\n"%s":{\n\t"information":{'
-                        '\n\t\t"authors":"%s",'
-                        '\n\t\t"name":"%s",'
-                        '\n\t\t"value":%s,'
-                        '\n\t},'
-                        '\n\t"slotType":"%s",\n' % (
-                            name,
-                            authors,
-                            export_object.data.jbeam.name,
-                            export_object.data.jbeam.value,
-                            export_object.data.jbeam.slot))
+                    jbeam_file.write('{\n"%s":{\n' % name)
+
+                    if export_object.data.jbeam.export_information:
+                        jbeam_file.write(
+                            '\t"information":{\n'
+                            '\t\t"authors":"%s",\n'
+                            '\t\t"name":"%s",\n'
+                            '\t\t"value":%s,\n'
+                            '\t},\n' % (
+                                authors,
+                                export_object.data.jbeam.name,
+                                export_object.data.jbeam.value))
+
+                    jbeam_file.write('\t"slotType":"%s",\n' % export_object.data.jbeam.slot)
 
                 mesh.update(calc_edges=True, calc_loop_triangles=True)
 

@@ -298,10 +298,33 @@ class PANEL_PT_jbeam_object(bpy.types.Panel):
         layout.use_property_decorate = False
 
         if not context.active_object.type == "MESH":
-            row = layout.row()
-            row.prop(context.scene.jbeam, "incompatible")
-        else:
-            object_data = context.active_object.data
+            column = layout.column()
+            column.label(text='Non-mesh objects are not compatible with the exporter.',
+                         icon='ERROR')
+
+
+class PANEL_PT_jbeam_object_information(bpy.types.Panel):
+    bl_label = "Information"
+    bl_parent_id = "PANEL_PT_jbeam_object"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw_header(self, context):
+        self.layout.prop(context.active_object.data.jbeam, "export_information", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        active_object = context.active_object
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+
+        layout.active = active_object.type == "MESH"
+
+        if not active_object.type == "MESH" or not active_object.data.jbeam.export_information:
+            layout.active = False
+        else:  # Don't load the properties as they don't exist in the objects's data
+            object_data = active_object.data
 
             col = layout.column()
             col.prop(object_data.jbeam, "name")
@@ -324,10 +347,12 @@ class PANEL_PT_jbeam_object_nodes(bpy.types.Panel):
 
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
-        layout.active = active_object.data.jbeam.export_nodes
 
-        col = layout.column()
-        col.prop(active_object.data.jbeam, "node_prefix")
+        if not active_object.type == "MESH" or not active_object.data.jbeam.export_nodes:
+            layout.active = False
+        else:  # Don't load the properties as they don't exist in the objects's data
+            col = layout.column()
+            col.prop(active_object.data.jbeam, "node_prefix")
 
 
 class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
@@ -360,10 +385,6 @@ class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
         name="Diagonal Quad Faces",
         description="Edge on quad face (automatic diagonals)",
         default=True)
-    incompatible: bpy.props.BoolProperty(
-        name="Incompatible type",
-        description="This type of object is not compatible with the exporter. Use mesh type please.",
-        default=True)
     author_names: bpy.props.StringProperty(
         name="Authors",
         description="Author names")
@@ -383,9 +404,13 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
         description="Slot name for this part",
         default="main")
     node_prefix: bpy.props.StringProperty(
-        name="Nodes Prefix",
+        name="Prefix",
         description="String prefix used for node names",
         default="n")
+    export_information: bpy.props.BoolProperty(
+        name="Information",
+        description="Export basic part information",
+        default=True)
     export_nodes: bpy.props.BoolProperty(
         name="Nodes",
         description="Export vertices to nodes",
@@ -399,6 +424,7 @@ classes = (
     PROPERTIES_PG_jbeam_scene,
     PROPERTIES_PG_jbeam_object,
     PANEL_PT_jbeam_object,
+    PANEL_PT_jbeam_object_information,
     PANEL_PT_jbeam_object_nodes,
     PANEL_PT_jbeam_scene_information,
     PANEL_PT_jbeam_scene_nodes,
