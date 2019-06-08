@@ -18,7 +18,7 @@ Blender addon to export JBeam files for BeamNG.drive driving simulator.
 Documentation and usage is available **[here](http://wiki.beamng.com/Blender_Exporter_plugin)** on the BeamNG.drive wiki.
 
 ## Release Notes
-Release Notes are available **[here](./changelod.md)**.
+Release Notes are available **[here](./CHANGELOG.md)**.
 
 ## Credits
 - [mikebaker](https://github.com/rmikebaker) – Original [addon](https://github.com/rmikebaker/BlenderBeamNGExport)
