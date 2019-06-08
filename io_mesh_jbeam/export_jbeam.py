@@ -73,7 +73,6 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
         else:
             for selected_object in context.selected_objects:
                 if selected_object.type == 'MESH':
-                    # selected_object.select = False
                     export_objects.append(selected_object)
 
         export_objects_count = len(export_objects)
@@ -162,12 +161,14 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                 if self.filepath == "":
                     if context.scene.jbeam.export_path == "":
-                        self.report({'ERROR'},
-                                    'ERROR : No export folder set. Go to Scene > JBeam Exporter. Export cancelled!')
+                        bpy.context.view_layer.objects.active = active_object
 
                         if temp_object:
                             scene.objects.unlink(temp_object)
                             bpy.data.objects.remove(temp_object)
+
+                        self.report({'ERROR'},
+                                    'ERROR : No export folder set. Go to Scene > JBeam Exporter. Export cancelled!')
 
                         return {'CANCELLED'}
 
@@ -231,18 +232,6 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                 current_node_group_index = -2
 
-                def get_vertex_group_id(groups):
-                    if len(groups) == 0:
-                        return -1
-                    else:
-                        return groups[0].group
-
-                def get_vertex_group_name(groups):
-                    if len(groups) == 0:
-                        return ""
-                    else:
-                        return selected_object.vertex_groups[groups[0].group].name
-
                 for vertex in sorted_nodes:
                     if current_node_group_index != get_vertex_group_id(vertex.groups):
                         current_node_group_index = get_vertex_group_id(vertex.groups)
@@ -251,7 +240,8 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                             if context.scene.jbeam.export_mode == 'jbeam':
                                 jbeam_file.write('\t\t')
 
-                            jbeam_file.write('{"group":"%s"},\n' % (get_vertex_group_name(vertex.groups)))
+                            jbeam_file.write(
+                                '{"group":"%s"},\n' % (get_vertex_group_name(export_object, vertex.groups)))
 
                     if context.scene.jbeam.export_nodes and context.active_object.data.jbeam.export_nodes and context.scene.jbeam.export_mode == 'jbeam':
                         jbeam_file.write('\t\t')

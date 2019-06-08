@@ -162,17 +162,6 @@ class MENU_MT_jbeam_export(bpy.types.Menu):
         row.enabled = exportable_mesh_count > 0
 
 
-def get_exportable_mesh_count():
-    num = 0
-
-    for selectable_object in bpy.context.selectable_objects:
-        if selectable_object.type == 'MESH':
-            if '.jbeam' in selectable_object.name:
-                num += 1
-
-    return num
-
-
 def menu_func_export(self, context):
     self.layout.menu("MENU_MT_jbeam_export", text='JBeam (.jbeam)')
 
