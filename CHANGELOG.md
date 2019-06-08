@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.3.0
+## 0.3.0 (WIP)
  - Blender 2.80 support!
  - Major UI rework
  - Added property overrides:

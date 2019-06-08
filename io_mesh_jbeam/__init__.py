@@ -54,15 +54,15 @@ for filename in [f for f in os.listdir(os.path.dirname(os.path.realpath(__file__
 
 class BeamGen(bpy.types.Operator):
     bl_idname = 'object.beamgen'
-    bl_description = 'beamGen' + ' v.' + print_version()
-    bl_label = 'beam(edge) generator'
+    bl_description = 'BeamGen' + ' v.' + print_version()
+    bl_label = 'BeamGen'
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         active_object = context.edit_object
 
         if active_object is None:
-            self.report({'ERROR'}, 'ERROR : Currently not in edit mode! Operation cancelled!')
+            self.report({'ERROR'}, 'BeamGen only operates in edit mode')
             return {'CANCELLED'}
 
         vertices = []
@@ -76,7 +76,7 @@ class BeamGen(bpy.types.Operator):
         vertex_count = len(vertices)
 
         if vertex_count <= 1:
-            self.report({'ERROR'}, 'ERROR: Select more than 1 vertex')
+            self.report({'ERROR'}, 'Select more than 1 vertex')
             bpy.ops.object.mode_set(mode='EDIT')
             return {'CANCELLED'}
 
@@ -103,6 +103,20 @@ class BeamGen(bpy.types.Operator):
         self.report({'INFO'}, 'BeamGen successfully created ' +
                     str(edge_count) + (' edge' if edge_count == 1 else ' edges'))
         return {'FINISHED'}
+
+
+class MENU_MT_jbeam_mesh(bpy.types.Menu):
+    bl_label = 'JBeam'
+
+    def draw(self, context):
+        self.layout.operator(BeamGen.bl_idname)
+
+
+def menu_func_mesh(self, context):
+    layout = self.layout
+
+    layout.separator()
+    layout.menu("MENU_MT_jbeam_mesh")
 
 
 class MENU_MT_jbeam_export(bpy.types.Menu):
@@ -530,6 +544,7 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
 
 classes = (
     BeamGen,
+    MENU_MT_jbeam_mesh,
     MENU_MT_jbeam_export,
     PANEL_PT_jbeam_export,
     PROPERTIES_PG_jbeam_scene,
@@ -554,6 +569,7 @@ def register():
     for c in classes:
         bpy.utils.register_class(c)
 
+    bpy.types.VIEW3D_MT_edit_mesh.append(menu_func_mesh)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 
     def make_pointer(prop_type):
@@ -567,6 +583,7 @@ def unregister():
     for c in reversed(classes):
         bpy.utils.unregister_class(c)
 
+    bpy.types.VIEW3D_MT_edit_mesh.remove(menu_func_mesh)
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
     del bpy.types.Scene.jbeam
     del bpy.types.Mesh.jbeam
