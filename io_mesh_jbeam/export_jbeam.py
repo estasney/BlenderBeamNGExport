@@ -283,7 +283,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     if context.scene.jbeam.export_mode == 'jbeam':
                         jbeam_file.write('\t],\n')
 
-                if context.scene.jbeam.export_beams:
+                if context.scene.jbeam.export_beams and context.active_object.data.jbeam.export_nodes:
                     jbeam_file.write('//--Beams--')
                     jbeam_file.write(new_line)
 
@@ -304,7 +304,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                         jbeam_file.write('],')
                         jbeam_file.write(new_line)
 
-                    if context.scene.jbeam.export_edges_from_faces:
+                    if context.scene.jbeam.export_edges_from_faces and context.active_object.data.jbeam.export_edges_from_faces:
                         for face in mesh.polygons:
                             vertices = face.vertices
 
@@ -354,7 +354,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                                     jbeam_file.write('\t\t["%s","%s"],\n' % (
                                         sorted_nodes[node_index4].node_name, sorted_nodes[node_index1].node_name))
 
-                                if context.scene.jbeam.export_face_diagonals:
+                                if context.scene.jbeam.export_face_diagonals and context.active_object.data.jbeam.export_face_diagonals:
                                     if context.scene.jbeam.export_mode == 'list':
                                         jbeam_file.write('["%s","%s"],\n' % (
                                             sorted_nodes[node_index1].node_name, sorted_nodes[node_index3].node_name))
@@ -382,7 +382,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     if context.scene.jbeam.export_mode == 'jbeam':
                         jbeam_file.write('\t],\n')
 
-                if context.scene.jbeam.export_collision_triangles:
+                if context.scene.jbeam.export_collision_triangles and context.active_object.data.jbeam.export_collision_triangles:
                     jbeam_file.write('//--Collision Triangles--')
                     jbeam_file.write(new_line)
                     temp_object.modifiers.new("tricol", "TRIANGULATE")

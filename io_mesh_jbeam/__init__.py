@@ -369,6 +369,53 @@ class PANEL_PT_jbeam_object_nodes(bpy.types.Panel):
             col.prop(active_object.data.jbeam, "node_prefix")
 
 
+class PANEL_PT_jbeam_object_beams(bpy.types.Panel):
+    bl_label = "Beams"
+    bl_parent_id = "PANEL_PT_jbeam_object"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw_header(self, context):
+        self.layout.prop(context.active_object.data.jbeam, "export_beams", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        active_object = context.active_object
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+        layout.active = context.active_object.data.jbeam.export_beams
+
+        flow = layout.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=True)
+
+        column = flow.column()
+        column.prop(active_object.data.jbeam, "export_edges_from_faces")
+
+        column = flow.column()
+        column.active = active_object.data.jbeam.export_edges_from_faces
+        column.prop(active_object.data.jbeam, "export_face_diagonals")
+
+
+class PANEL_PT_jbeam_object_collision_triangles(bpy.types.Panel):
+    bl_label = "Collision Triangles"
+    bl_parent_id = "PANEL_PT_jbeam_object"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw_header(self, context):
+        self.layout.prop(context.active_object.data.jbeam, "export_collision_triangles", text="")
+
+    def draw(self, context):
+        layout = self.layout
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+        layout.active = context.active_object.data.jbeam.export_collision_triangles
+
+        column = layout.column()
+        column.label(text="No properties yet.")
+
+
 class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
     export_path: bpy.props.StringProperty(
         name="Export Path",
@@ -433,6 +480,22 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
         name="Nodes",
         description="Export vertices to nodes",
         default=True)
+    export_beams: bpy.props.BoolProperty(
+        name="Beams",
+        description="Export edges to beams",
+        default=True)
+    export_edges_from_faces: bpy.props.BoolProperty(
+        name="Edges From Faces",
+        description="Export edges from faces",
+        default=True)
+    export_face_diagonals: bpy.props.BoolProperty(
+        name="Diagonal Quad Faces",
+        description="Edge on quad face (automatic diagonals)",
+        default=True)
+    export_collision_triangles: bpy.props.BoolProperty(
+        name="Collision Triangles",
+        description="Export faces to collision triangles",
+        default=True)
 
 
 classes = (
@@ -445,6 +508,8 @@ classes = (
     PANEL_PT_jbeam_object_information,
     PANEL_PT_jbeam_object_slots,
     PANEL_PT_jbeam_object_nodes,
+    PANEL_PT_jbeam_object_beams,
+    PANEL_PT_jbeam_object_collision_triangles,
     PANEL_PT_jbeam_scene_information,
     PANEL_PT_jbeam_scene_nodes,
     PANEL_PT_jbeam_scene_beams,
