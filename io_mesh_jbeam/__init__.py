@@ -28,7 +28,6 @@ bl_info = {
     "blender": (2, 80, 0),
     "wiki_url": 'http://wiki.beamng.com/Blender_Exporter_plugin',
     "tracker_url": "https://github.com/50thomatoes50/BlenderBeamNGExport/issues",
-    "warning": "Under construction!",
     "description": "Export nodes, beams and collision triangles for BeamNG.drive (.jbeam)",
     "category": "Import-Export"
 }
