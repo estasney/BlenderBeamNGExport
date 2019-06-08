@@ -201,14 +201,14 @@ class PANEL_PT_jbeam_scene_information(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        scene = context.scene
 
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
-
-        layout.active = context.scene.jbeam.export_information
+        layout.active = scene.jbeam.export_information and scene.jbeam.export_mode == 'jbeam'
 
         row = layout.row()
-        row.prop(context.scene.jbeam, "author_names")
+        row.prop(scene.jbeam, "author_names")
 
 
 class PANEL_PT_jbeam_scene_nodes(bpy.types.Panel):
@@ -313,9 +313,12 @@ class PANEL_PT_jbeam_object_information(bpy.types.Panel):
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
 
+        # Don't load the properties as they don't exist in the objects's data
         if not active_object.type == "MESH" or not active_object.data.jbeam.export_information:
             layout.active = False
-        else:  # Don't load the properties as they don't exist in the objects's data
+        else:
+            layout.active = context.scene.jbeam.export_mode == 'jbeam' and context.scene.jbeam.export_information
+
             object_data = active_object.data
 
             col = layout.column()
@@ -344,9 +347,11 @@ class PANEL_PT_jbeam_object_slots(bpy.types.Panel):
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
 
+        # Don't load the properties as they don't exist in the objects's data
         if not active_object.type == "MESH":
             layout.active = False
-        else:  # Don't load the properties as they don't exist in the objects's data
+        else:
+            layout.active = context.scene.jbeam.export_mode == 'jbeam'
             col = layout.column()
             col.prop(active_object.data.jbeam, "slot_type")
 
@@ -368,9 +373,12 @@ class PANEL_PT_jbeam_object_nodes(bpy.types.Panel):
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
 
+        # Don't load the properties as they don't exist in the objects's data
         if not active_object.type == "MESH" or not active_object.data.jbeam.export_nodes:
             layout.active = False
-        else:  # Don't load the properties as they don't exist in the objects's data
+        else:
+            layout.active = context.scene.jbeam.export_nodes
+
             col = layout.column()
             col.prop(active_object.data.jbeam, "node_prefix")
 
@@ -392,9 +400,12 @@ class PANEL_PT_jbeam_object_beams(bpy.types.Panel):
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
 
+        # Don't load the properties as they don't exist in the objects's data
         if not active_object.type == "MESH" or not active_object.data.jbeam.export_beams:
             layout.active = False
-        else:  # Don't load the properties as they don't exist in the objects's data
+        else:
+            layout.active = context.scene.jbeam.export_beams
+
             flow = layout.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=True)
 
             column = flow.column()
@@ -422,9 +433,12 @@ class PANEL_PT_jbeam_object_collision_triangles(bpy.types.Panel):
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
 
+        # Don't load the properties as they don't exist in the objects's data
         if not active_object.type == "MESH" or not active_object.data.jbeam.export_collision_triangles:
             layout.active = False
-        else:  # Don't load the properties as they don't exist in the objects's data
+        else:
+            layout.active = context.scene.jbeam.export_collision_triangles
+
             column = layout.column()
             column.label(text="No properties yet.")
 
