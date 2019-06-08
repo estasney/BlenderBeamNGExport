@@ -322,7 +322,28 @@ class PANEL_PT_jbeam_object_information(bpy.types.Panel):
             col = layout.column()
             col.prop(object_data.jbeam, "name")
             col.prop(object_data.jbeam, "value")
-            col.prop(object_data.jbeam, "slot")
+
+
+class PANEL_PT_jbeam_object_slots(bpy.types.Panel):
+    bl_label = "Slots"
+    bl_parent_id = "PANEL_PT_jbeam_object"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw(self, context):
+        layout = self.layout
+        active_object = context.active_object
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+
+        layout.active = active_object.type == "MESH"
+
+        if not active_object.type == "MESH" or not active_object.data.jbeam.export_information:
+            layout.active = False
+        else:  # Don't load the properties as they don't exist in the objects's data
+            col = layout.column()
+            col.prop(active_object.data.jbeam, "slot_type")
 
 
 class PANEL_PT_jbeam_object_nodes(bpy.types.Panel):
@@ -396,9 +417,9 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
         name="Value",
         description="Part cost",
         min=0)
-    slot: bpy.props.StringProperty(
-        name="Slot",
-        description="Slot name for this part",
+    slot_type: bpy.props.StringProperty(
+        name="Type",
+        description="Slot type for this part",
         default="main")
     node_prefix: bpy.props.StringProperty(
         name="Prefix",
@@ -422,6 +443,7 @@ classes = (
     PROPERTIES_PG_jbeam_object,
     PANEL_PT_jbeam_object,
     PANEL_PT_jbeam_object_information,
+    PANEL_PT_jbeam_object_slots,
     PANEL_PT_jbeam_object_nodes,
     PANEL_PT_jbeam_scene_information,
     PANEL_PT_jbeam_scene_nodes,

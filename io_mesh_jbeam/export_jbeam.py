@@ -217,7 +217,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                                 export_object.data.jbeam.name,
                                 export_object.data.jbeam.value))
 
-                    jbeam_file.write('\t"slotType":"%s",\n' % export_object.data.jbeam.slot)
+                    jbeam_file.write('\t"slotType":"%s",\n' % export_object.data.jbeam.slot_type)
 
                 mesh.update(calc_edges=True, calc_loop_triangles=True)
 
