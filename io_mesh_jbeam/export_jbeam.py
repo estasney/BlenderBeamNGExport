@@ -205,7 +205,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                     jbeam_file.write('{\n"%s":{\n' % name)
 
-                    if export_object.data.jbeam.export_information:
+                    if context.scene.jbeam.export_information and export_object.data.jbeam.export_information:
                         jbeam_file.write(
                             '\t"information":{\n'
                             '\t\t"authors":"%s",\n'
