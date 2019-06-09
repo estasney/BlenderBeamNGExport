@@ -3,6 +3,7 @@
 ## 0.3.0 (WIP)
  - Blender 2.80 support!
  - Major UI rework
+ - Added an automatic backup before export feature
  - Added property overrides:
     - Enable or disable JBeam sections/properties per object or from the scene
  - Added an authors property

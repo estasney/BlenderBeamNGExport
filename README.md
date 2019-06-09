@@ -21,4 +21,4 @@ Documentation and usage is available **[here](http://wiki.beamng.com/Blender_Exp
 Release Notes are available **[here](./CHANGELOG.md)**.
 
 ## Credits
-- [mikebaker](https://github.com/rmikebaker) – Original [addon](https://github.com/rmikebaker/BlenderBeamNGExport)
+- [rmikebaker](https://github.com/rmikebaker) – Original [addon](https://github.com/rmikebaker/BlenderBeamNGExport)
