@@ -123,7 +123,6 @@ class MENU_MT_jbeam_export(bpy.types.Menu):
     bl_label = 'Export JBeam'
 
     def draw(self, context):
-
         layout = self.layout
         layout.operator_context = 'EXEC_DEFAULT'
 
@@ -160,18 +159,12 @@ class MENU_MT_jbeam_export(bpy.types.Menu):
                 group_layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text=single_object[0].name,
                                       icon='MESH_DATA')
 
-        elif len(bpy.context.selected_objects):
-            row = layout.row()
-            row.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text="invalid selection", icon='ERROR')
-            row.enabled = False
-
-        row = layout.row()
         exportable_mesh_count = get_exportable_mesh_count()
 
+        row = layout.row()
         row.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname,
                      text="Scene (selectable): all mesh like *.jbeam (" + str(exportable_mesh_count) + ")",
                      icon='SCENE_DATA').export_scene = True
-
         row.enabled = exportable_mesh_count > 0
 
 

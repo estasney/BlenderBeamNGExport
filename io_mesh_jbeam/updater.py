@@ -37,13 +37,13 @@ class MENU_MT_jbeam_updated(bpy.types.Menu):
     bl_label = "JBeam Exporter successfully updated"
 
     def draw(self, context):
-        self.layout.operator("wm.url_open", text="Change log available at Github",
-                             icon='TEXT').url = "https://github.com/50thomatoes50/BlenderBeamNGExport/blob/master/changelod.md"
+        self.layout.operator("wm.url_open", text="Release Notes available at Github",
+                             icon='TEXT').url = "https://github.com/50thomatoes50/BlenderBeamNGExport/blob/master/CHANGELOG.md"
 
 
 class SCRIPT_OT_jbeam_update(bpy.types.Operator):
     bl_idname = "script.jbeam_update"
-    bl_label = "JBeam Exporter updater"
+    bl_label = "JBeam Exporter Updater"
     bl_description = "Updater for the Blender JBeam Exporter addon."
 
     @classmethod
@@ -54,10 +54,10 @@ class SCRIPT_OT_jbeam_update(bpy.types.Operator):
         print("Checking JBeam Exporter addon updates...")
 
         cur_version = get_addon_version()
+        version_url = "https://raw.githubusercontent.com/50thomatoes50/BlenderBeamNGExport/master/io_mesh_jbeam/version.json"
 
         try:
-            data = urllib.request.urlopen(
-                "https://raw.githubusercontent.com/50thomatoes50/BlenderBeamNGExport/master/io_mesh_jbeam/version.json").read().decode(
+            data = urllib.request.urlopen(version_url).read().decode(
                 'ASCII').split("\n")
             remote_ver = data[0].strip().split(".")
             remote_bpy = data[1].strip().split(".")
@@ -78,8 +78,8 @@ class SCRIPT_OT_jbeam_update(bpy.types.Operator):
                     print(
                         "Found new version {}, downloading from {}...".format(print_version(remote_ver), download_url))
 
-                    zip = zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(download_url).read()))
-                    zip.extractall(path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+                    file = zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(download_url).read()))
+                    file.extractall(path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
                     self.report({'INFO'}, "Update done " + print_version(remote_ver))
                     bpy.ops.wm.call_menu(name="MENU_MT_jbeam_updated")
