@@ -172,7 +172,7 @@ def menu_func_export(self, context):
     self.layout.menu("MENU_MT_jbeam_export", text='JBeam (.jbeam)')
 
 
-class PANEL_PT_jbeam_export(bpy.types.Panel):
+class PANEL_PT_jbeam_scene(bpy.types.Panel):
     bl_label = "JBeam Exporter"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -193,15 +193,17 @@ class PANEL_PT_jbeam_export(bpy.types.Panel):
         row.prop(scene.jbeam, "export_path")
 
         row = layout.row()
-        row.prop(scene.jbeam, 'backup')
+        row.prop(scene.jbeam, "export_format", expand=True)
 
         row = layout.row()
-        row.prop(scene.jbeam, "export_mode", expand=True)
+        row.prop(scene.jbeam, 'backup')
+
+
 
 
 class PANEL_PT_jbeam_scene_information(bpy.types.Panel):
     bl_label = "Information"
-    bl_parent_id = "PANEL_PT_jbeam_export"
+    bl_parent_id = "PANEL_PT_jbeam_scene"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
 
@@ -214,7 +216,7 @@ class PANEL_PT_jbeam_scene_information(bpy.types.Panel):
 
         layout.use_property_split = True  # Active single-column layout
         layout.use_property_decorate = False
-        layout.active = scene.jbeam.export_information and scene.jbeam.export_mode == 'jbeam'
+        layout.active = scene.jbeam.export_information and scene.jbeam.export_format == 'jbeam'
 
         row = layout.row()
         row.prop(scene.jbeam, "author_names")
@@ -222,7 +224,7 @@ class PANEL_PT_jbeam_scene_information(bpy.types.Panel):
 
 class PANEL_PT_jbeam_scene_nodes(bpy.types.Panel):
     bl_label = "Nodes"
-    bl_parent_id = "PANEL_PT_jbeam_export"
+    bl_parent_id = "PANEL_PT_jbeam_scene"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
 
@@ -243,7 +245,7 @@ class PANEL_PT_jbeam_scene_nodes(bpy.types.Panel):
 
 class PANEL_PT_jbeam_scene_beams(bpy.types.Panel):
     bl_label = "Beams"
-    bl_parent_id = "PANEL_PT_jbeam_export"
+    bl_parent_id = "PANEL_PT_jbeam_scene"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
 
@@ -270,7 +272,7 @@ class PANEL_PT_jbeam_scene_beams(bpy.types.Panel):
 
 class PANEL_PT_jbeam_scene_collision_triangles(bpy.types.Panel):
     bl_label = "Collision Triangles"
-    bl_parent_id = "PANEL_PT_jbeam_export"
+    bl_parent_id = "PANEL_PT_jbeam_scene"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
 
@@ -327,7 +329,7 @@ class PANEL_PT_jbeam_object_information(bpy.types.Panel):
         if not active_object.type == "MESH" or not active_object.data.jbeam.export_information:
             layout.active = False
         else:
-            layout.active = context.scene.jbeam.export_mode == 'jbeam' and context.scene.jbeam.export_information
+            layout.active = context.scene.jbeam.export_format == 'jbeam' and context.scene.jbeam.export_information
 
             object_data = active_object.data
 
@@ -361,7 +363,7 @@ class PANEL_PT_jbeam_object_slots(bpy.types.Panel):
         if not active_object.type == "MESH":
             layout.active = False
         else:
-            layout.active = context.scene.jbeam.export_mode == 'jbeam'
+            layout.active = context.scene.jbeam.export_format == 'jbeam'
             col = layout.column()
             col.prop(active_object.data.jbeam, "slot_type")
 
@@ -463,15 +465,15 @@ class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
         name="Export Path",
         description="Where all the .jbeam files will be saved",
         subtype='DIR_PATH')
+    export_format: bpy.props.EnumProperty(
+        name="Export Format",
+        items=[("jbeam", "JBeam", "Export as a JBeam file"),
+               ("list", "List", "Export as a bare list of nodes, beams and collision triangles"),
+               ])
     backup: bpy.props.BoolProperty(
         name="Backup Before Exporting",
         description="Backup the old JBeam file before exporting the new one",
         default=False)
-    export_mode: bpy.props.EnumProperty(
-        name="Export Mode",
-        items=[("jbeam", "JBeam", "Export as a JBeam file"),
-               ("list", "List", "Export as a bare list of nodes, beams and collision triangles"),
-               ])
     export_information: bpy.props.BoolProperty(
         name="Information",
         description="Export basic part information",
@@ -560,7 +562,7 @@ classes = (
     BeamGen,
     MENU_MT_jbeam_mesh,
     MENU_MT_jbeam_export,
-    PANEL_PT_jbeam_export,
+    PANEL_PT_jbeam_scene,
     PROPERTIES_PG_jbeam_scene,
     PROPERTIES_PG_jbeam_object,
     PANEL_PT_jbeam_object,
