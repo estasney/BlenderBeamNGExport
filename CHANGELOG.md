@@ -8,6 +8,7 @@
     - Enable or disable JBeam sections/properties per object or from the scene
  - Added an authors property
  - Added a value (cost) property for parts
+ - You can now run BeamGen from `Mesh > JBeam > BeamGen` in edit mode
  - Added a notification when the export succeeded or when BeamGen successfully executed
  - JBeam indentation fixes for the exported files
  - Bugfixes and lots of code cleanup!
