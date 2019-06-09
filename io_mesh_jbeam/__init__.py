@@ -200,6 +200,9 @@ class PANEL_PT_jbeam_export(bpy.types.Panel):
         row.prop(scene.jbeam, "export_path")
 
         row = layout.row()
+        row.prop(scene.jbeam, 'backup')
+
+        row = layout.row()
         row.prop(scene.jbeam, "export_mode", expand=True)
 
 
@@ -467,6 +470,10 @@ class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
         name="Export Path",
         description="Where all the .jbeam files will be saved",
         subtype='DIR_PATH')
+    backup: bpy.props.BoolProperty(
+        name="Backup Before Exporting",
+        description="Backup the old JBeam file before exporting the new one",
+        default=False)
     export_mode: bpy.props.EnumProperty(
         name="Export Mode",
         items=[("jbeam", "JBeam", "Export as a JBeam file"),

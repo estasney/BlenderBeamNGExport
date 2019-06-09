@@ -88,7 +88,6 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
             for export_object in export_objects:
                 # Make the active object be the selected one
                 bpy.context.view_layer.objects.active = export_object
-                print(export_object.data.jbeam)
                 # Want to be in Object mode
                 bpy.ops.object.mode_set(mode='OBJECT')
 
@@ -157,7 +156,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                 else:
                     filename = export_object.name + '.jbeam'
 
-                print("File = " + str(self.filepath) + filename)
+                print("Exporting JBeam file: " + str(self.filepath) + filename)
 
                 if self.filepath == "":
                     if context.scene.jbeam.export_path == "":
@@ -168,7 +167,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                             bpy.data.objects.remove(temp_object)
 
                         self.report({'ERROR'},
-                                    'ERROR : No export folder set. Go to Scene > JBeam Exporter. Export cancelled!')
+                                    'No export folder set. Go to Scene > JBeam Exporter.')
 
                         return {'CANCELLED'}
 
@@ -188,21 +187,31 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                             scene.objects.unlink(temp_object)
                             bpy.data.objects.remove(temp_object)
 
-                        self.report({'ERROR'}, 'ERROR : Must be exported in a directory. Export cancelled!')
-                        print('CANCELLED: Must be exported in a directory. directory = "' + self.filepath + '"')
+                        self.report({'ERROR'}, 'The export path is not valid')
+                        print('CANCELLED: The export path is not valid. directory = "' + self.filepath + '"')
                         return {'CANCELLED'}
 
+                # If the file already exists
+                if context.scene.jbeam.backup and os.path.isfile(self.filepath + filename):
+                    # Count the number of times there are original + backup files
+                    jbeam_file_count = len([f for f in os.listdir(self.filepath)
+                                            if filename in f and os.path.isfile(os.path.join(self.filepath, f))])
+
+                    # Backup the original file
+                    os.rename(self.filepath + filename, self.filepath + filename + str(jbeam_file_count))
+
                 jbeam_file = open(self.filepath + filename, 'wt')
+
+                if '.jbeam' in export_object.name:
+                    name = export_object.name[0:len(export_object.name) - 6]
+                else:
+                    name = export_object.name
 
                 if context.scene.jbeam.export_mode == 'jbeam':
                     authors = 'Blender JBeam Exporter v' + print_version()
 
                     if context.scene.jbeam.author_names and len(context.scene.jbeam.author_names) > 0:
                         authors = context.scene.jbeam.author_names + ", " + authors
-                    if '.jbeam' in export_object.name:
-                        name = export_object.name[0:len(export_object.name) - 6]
-                    else:
-                        name = export_object.name
 
                     jbeam_file.write('{\n"%s":{\n' % name)
 
