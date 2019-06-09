@@ -177,7 +177,6 @@ class PANEL_PT_jbeam_scene(bpy.types.Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "scene"
-    bl_default_closed = True
 
     def draw(self, context):
         layout = self.layout
@@ -197,8 +196,6 @@ class PANEL_PT_jbeam_scene(bpy.types.Panel):
 
         row = layout.row()
         row.prop(scene.jbeam, 'backup')
-
-
 
 
 class PANEL_PT_jbeam_scene_information(bpy.types.Panel):
@@ -290,12 +287,40 @@ class PANEL_PT_jbeam_scene_collision_triangles(bpy.types.Panel):
         column.label(text="No properties yet.")
 
 
+class PANEL_PT_jbeam_scene_about(bpy.types.Panel):
+    bl_label = "About"
+    bl_parent_id = "PANEL_PT_jbeam_scene"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+
+        row = layout.row()
+        row.operator(updater.SCRIPT_OT_jbeam_update.bl_idname, text="Check For Updates", icon="QUESTION")
+
+        column = layout.column()
+        split = column.split()
+        sub = split.row()
+        sub.operator("wm.url_open", text="Documentation", icon="HELP").url = bl_info['wiki_url']
+        sub.operator("wm.url_open", text="Report a Bug", icon='URL').url = bl_info['tracker_url']
+
+        column = layout.column()
+        column.label(text="Blender BeamNG Jbeam Exporter v" + print_version())
+        column.separator()
+        column.label(text="Maintainers : Thomas Portassau (50thomatoes50), Julien Vanelian (Distrikt64/Juju)")
+        column.label(text="Orginal addon : Mike Baker (rmikebaker)")
+
+
 class PANEL_PT_jbeam_object(bpy.types.Panel):
     bl_label = "JBeam Properties"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "data"
-    bl_default_closed = True
 
     def draw(self, context):
         layout = self.layout
@@ -438,6 +463,7 @@ class PANEL_PT_jbeam_object_collision_triangles(bpy.types.Panel):
     bl_parent_id = "PANEL_PT_jbeam_object"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
         if context.active_object.type == "MESH":
@@ -575,6 +601,7 @@ classes = (
     PANEL_PT_jbeam_scene_nodes,
     PANEL_PT_jbeam_scene_beams,
     PANEL_PT_jbeam_scene_collision_triangles,
+    PANEL_PT_jbeam_scene_about,
     export_jbeam.SCRIPT_OT_jbeam_export,
     updater.SCRIPT_OT_jbeam_update,
     updater.MENU_MT_jbeam_updated
