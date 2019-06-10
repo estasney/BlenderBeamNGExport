@@ -1,5 +1,7 @@
 import sys
+import os
 import bpy
+from os.path import expanduser
 
 
 # By default, prints the current addon version.
@@ -38,3 +40,12 @@ def get_vertex_group_name(obj, groups):
         return ""
     else:
         return obj.vertex_groups[groups[0].group].name
+
+
+def get_beamng_mod_path():
+    sep = os.sep
+    return expanduser("~") + sep + 'Documents' + sep + 'BeamNG.drive' + sep + 'mods' + sep + 'unpacked' + sep
+
+
+def save_prefs(self, context):
+    bpy.ops.wm.save_userpref()

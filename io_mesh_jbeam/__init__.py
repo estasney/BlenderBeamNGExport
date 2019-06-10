@@ -22,7 +22,7 @@
 
 bl_info = {
     "name": "Export BeamNG.drive JBeam format (.jbeam)",
-    "author": "Mike Baker (rmikebaker), Thomas Portassau (50thomatoes50) & Julien Vanelian (Distrikt64/Juju)",
+    "author": "Mike Baker (rmikebaker), Thomas Portassau (50thomatoes50), Julien Vanelian (Distrikt64/Juju)",
     "location": "File > Import-Export",
     "version": (0, 3, 0),
     "blender": (2, 80, 0),
@@ -38,6 +38,7 @@ import os
 
 from bpy.props import *
 from bpy.utils import *
+from bpy.app.handlers import persistent
 from .utils import *
 from . import export_jbeam
 from . import updater
@@ -117,6 +118,24 @@ def menu_func_mesh(self, context):
 
     layout.separator()
     layout.menu("MENU_MT_jbeam_mesh")
+
+
+class PREFERENCES_PF_jbeam_addon(bpy.types.AddonPreferences):
+    bl_idname = __name__
+
+    default_export_path = get_beamng_mod_path()
+
+    default_export_path: bpy.props.StringProperty(
+        name="Default Export Path",
+        description="Where all the .jbeam files will be saved by default " +
+                    "if no custom path is specified in the scene JBeam settings",
+        subtype='DIR_PATH',
+        default=default_export_path,
+        update=utils.save_prefs)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.prop(self, "default_export_path")
 
 
 class MENU_MT_jbeam_export(bpy.types.Menu):
@@ -487,10 +506,13 @@ class PANEL_PT_jbeam_object_collision_triangles(bpy.types.Panel):
 
 
 class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
+    default_export_path = get_beamng_mod_path()
+
     export_path: bpy.props.StringProperty(
         name="Export Path",
         description="Where all the .jbeam files will be saved",
-        subtype='DIR_PATH')
+        subtype='DIR_PATH',
+        default=default_export_path)
     export_format: bpy.props.EnumProperty(
         name="Export Format",
         items=[("jbeam", "JBeam", "Export as a JBeam file"),
@@ -588,6 +610,7 @@ classes = (
     BeamGen,
     MENU_MT_jbeam_mesh,
     MENU_MT_jbeam_export,
+    PREFERENCES_PF_jbeam_addon,
     PANEL_PT_jbeam_scene,
     PROPERTIES_PG_jbeam_scene,
     PROPERTIES_PG_jbeam_object,
@@ -608,6 +631,17 @@ classes = (
 )
 
 
+# Ran each time a .blend file loads
+@persistent
+def load_post_handler(scene):
+    scene = bpy.context.scene
+
+    # If it's a new file, or it doesn't have the scene export path property, get the export path from the preferences
+    if not bpy.data.filepath or not scene.jbeam.export_path or bpy.data.filepath and not scene.jbeam.export_path:
+        addon = bpy.context.preferences.addons.get('io_mesh_jbeam')
+        scene.jbeam.export_path = addon.preferences.default_export_path
+
+
 def register():
     for c in classes:
         bpy.utils.register_class(c)
@@ -620,6 +654,7 @@ def register():
 
     bpy.types.Scene.jbeam = make_pointer(PROPERTIES_PG_jbeam_scene)
     bpy.types.Mesh.jbeam = make_pointer(PROPERTIES_PG_jbeam_object)
+    bpy.app.handlers.load_post.append(load_post_handler)
 
 
 def unregister():
@@ -630,6 +665,7 @@ def unregister():
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
     del bpy.types.Scene.jbeam
     del bpy.types.Mesh.jbeam
+    bpy.app.handlers.load_post.remove(load_post_handler)
 
 
 # This allows you to run the script directly from blenders text editor

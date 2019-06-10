@@ -183,13 +183,9 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                 if not context.scene.jbeam.export_path.startswith("//"):
                     if not (os.path.isdir(self.filepath)):
-                        if temp_object:
-                            scene.objects.unlink(temp_object)
-                            bpy.data.objects.remove(temp_object)
-
-                        self.report({'ERROR'}, 'The export path is not valid')
-                        print('CANCELLED: The export path is not valid. directory = "' + self.filepath + '"')
-                        return {'CANCELLED'}
+                        # Creates the path if it doesn't exists
+                        # useful if the default BeamNG mod directory doesn't exist
+                        os.makedirs(self.filepath)
 
                 # If the file already exists
                 if context.scene.jbeam.backup and os.path.isfile(self.filepath + filename):
