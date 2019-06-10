@@ -85,7 +85,7 @@ class SCRIPT_OT_jbeam_update(bpy.types.Operator):
                     bpy.ops.wm.call_menu(name="MENU_MT_jbeam_updated")
                     return {'FINISHED'}
 
-            self.report({'INFO'}, "Addon is up to date: " + print_version())
+            self.report({'INFO'}, "Addon is up to date: v" + print_version())
             return {'FINISHED'}
 
         except urllib.error.URLError as err:

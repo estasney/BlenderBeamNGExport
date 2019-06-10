@@ -128,7 +128,7 @@ class PREFERENCES_PF_jbeam_addon(bpy.types.AddonPreferences):
     default_export_path: bpy.props.StringProperty(
         name="Default Export Path",
         description="Where all the .jbeam files will be saved by default " +
-                    "if no custom path is specified in the scene JBeam settings",
+                    "the next time you start blender or you open a new file",
         subtype='DIR_PATH',
         default=default_export_path,
         update=utils.save_prefs)
