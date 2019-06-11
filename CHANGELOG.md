@@ -2,16 +2,24 @@
 
 ## 0.3.0 (WIP)
  - Blender 2.80 support!
- - Major UI rework
- - Added an automatic backup before export feature
- - Added property overrides:
-    - Enable or disable JBeam sections/properties per object or from the scene
- - Added an authors property
- - Added a value (cost) property for parts
- - You can now run BeamGen from `Mesh > JBeam > BeamGen` in edit mode
- - Added a notification when the export succeeded or when BeamGen successfully executed
- - JBeam indentation fixes for the exported files
- - Bugfixes and lots of code cleanup!
+
+
+ - User Interface
+    - Major UI rework, cleaner and more user friendly
+    - Added JBeam property overrides: Enable or disable JBeam sections/properties per object or from the scene
+    - Added an automatic backup before export feature
+    - Added an 'About' section in the scene JBeam panel
+    - Added a default export path in the addon preferences
+    - Added an authors property
+    - Added an optional cost value property
+    - BeamGen can now be run from `Mesh > JBeam > BeamGen` in edit mode
+    - Added a notification when the export succeeded or when BeamGen successfully executed
+
+
+ - Exporter
+    - Vertex Groups can now be used to export Node Groups!
+    - JBeam indentation fixes for the exported files
+    - Bugfixes and lots of code cleanup!
 
 ## 0.2.0
 A lot of source code and ideas comes from https://github.com/Artfunkel/BlenderSourceTools/
