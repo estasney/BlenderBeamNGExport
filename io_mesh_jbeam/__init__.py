@@ -35,6 +35,7 @@ bl_info = {
 import bpy
 import imp
 import os
+import bmesh
 
 from bpy.props import *
 from bpy.utils import *
@@ -53,56 +54,56 @@ for filename in [f for f in os.listdir(os.path.dirname(os.path.realpath(__file__
         imp.reload(mod)
 
 
-class BeamGen(bpy.types.Operator):
-    bl_idname = 'object.beamgen'
-    bl_description = 'BeamGen' + ' v.' + print_version()
-    bl_label = 'BeamGen'
+class OBJECT_OT_nodes_connector(bpy.types.Operator):
+    bl_idname = 'object.nodes_connector'
+    bl_description = 'Create beams/edges between selected nodes/vertices\nBlenderBeamNGExport v.' + print_version()
+    bl_label = 'NodesConnector (Previously named `BeamGen`)'
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         active_object = context.edit_object
 
         if active_object is None:
-            self.report({'ERROR'}, 'BeamGen only operates in edit mode')
+            self.report({'ERROR'}, 'NodesConnector only operates in edit mode')
             return {'CANCELLED'}
 
-        vertices = []
+        if not isinstance(active_object, bpy.types.Object) or not isinstance(active_object.data, bpy.types.Mesh):
+            self.report({'ERROR'}, 'NodesConnector only operates on Meshes')
+            return {'CANCELLED'}
 
-        bpy.ops.object.mode_set(mode='OBJECT')
+        bm = bmesh.from_edit_mesh(active_object.data)
 
-        for vertex in active_object.data.vertices:
+        selected_vertices = [] #array of BMVert
+
+        for vertex in bm.verts:
             if vertex.select:
-                vertices.append(vertex.index)
+                selected_vertices.append(vertex)
 
-        vertex_count = len(vertices)
+        vertex_count = len(selected_vertices)
 
         if vertex_count <= 1:
             self.report({'ERROR'}, 'Select more than 1 vertex')
+            bm.free()
             bpy.ops.object.mode_set(mode='EDIT')
             return {'CANCELLED'}
 
-        origin = len(active_object.data.edges) - 1
-        edge_count = 0
-        i = 0
-        j = vertex_count
+        edge_created = 0
+        edge_existed = 0
 
-        while j != 0:
-            j -= 1
-            edge_count += (vertex_count - (vertex_count - j))
+        for n1 in selected_vertices:
+            for n2 in selected_vertices:
+                if n1 != n2 and n2.index > n1.index:
+                    if bm.edges.get([n1,n2]) is None: #this already check for edges in the other direction, eg:[n2,n1] would return the same edge
+                        edge_created += 1
+                        bm.edges.new([n1,n2])
+                    else:
+                        edge_existed +=1
 
-        active_object.data.edges.add(edge_count)
+        if edge_created > 0:
+            bmesh.update_edit_mesh(active_object.data)
+        bm.free()
 
-        for n1 in vertices:
-            for n2 in vertices:
-                if n1 != n2 and n2 > n1:
-                    i += 1
-                    active_object.data.edges[origin + i].vertices[0] = n1
-                    active_object.data.edges[origin + i].vertices[1] = n2
-
-        bpy.ops.object.mode_set(mode='EDIT')
-
-        self.report({'INFO'}, 'BeamGen successfully created ' +
-                    str(edge_count) + (' edge' if edge_count == 1 else ' edges'))
+        self.report({'INFO'}, 'NodesConnector successfully created %d edge(s), %d already existed'%(edge_created, edge_existed))
         return {'FINISHED'}
 
 
@@ -110,7 +111,7 @@ class MENU_MT_jbeam_mesh(bpy.types.Menu):
     bl_label = 'JBeam'
 
     def draw(self, context):
-        self.layout.operator(BeamGen.bl_idname)
+        self.layout.operator(OBJECT_OT_nodes_connector.bl_idname)
 
 
 def menu_func_mesh(self, context):
@@ -607,7 +608,7 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
 
 
 classes = (
-    BeamGen,
+    OBJECT_OT_nodes_connector,
     MENU_MT_jbeam_mesh,
     MENU_MT_jbeam_export,
     PREFERENCES_PF_jbeam_addon,
