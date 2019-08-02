@@ -1,5 +1,9 @@
 Changelog
 -------------------
+
+#### 0.2.1 ####
+- fix updater exception when printing outdated blender version
+
 #### 0.2.0 ####
 A lot of source code and ideas comes from https://github.com/Artfunkel/BlenderSourceTools/
  - Added Updater
