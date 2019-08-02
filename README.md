@@ -1,20 +1,26 @@
-BlenderBeamNGExport
-===================
+# Blender BeamNG.drive JBeam Exporter
 
-Blender add-on script to export jbeam information for BeamNG.drive driving simulator.
-50thomatoes50's fork ![Version-0.2.0](https://img.shields.io/badge/Version-0.2.0-brightgreen.svg "Version-0.2.0") ![GNU V2](https://img.shields.io/github/license/50thomatoes50/BlenderBeamNGExport.svg "MIT License")
+![Version v0.3.0](https://img.shields.io/badge/version-v0.3.0-blue.svg?style=flat-square)
+![Blender 2.80](https://img.shields.io/badge/blender-^2.80-red.svg?style=flat-square)
+![Downloads](https://img.shields.io/github/downloads/50thomatoes50/BlenderBeamNGExport/total.svg?style=flat-square)
+![Contributors](https://img.shields.io/github/contributors/50thomatoes50/BlenderBeamNGExport.svg?style=flat-square)
+![Issues](https://img.shields.io/github/issues/50thomatoes50/BlenderBeamNGExport.svg?style=flat-square)
+![GNU V2](https://img.shields.io/github/license/50thomatoes50/BlenderBeamNGExport.svg?style=flat-square)
 
-![Screenshot](https://raw.github.com/50thomatoes50/BlenderBeamNGExport/master/img/blender_bng.JPG "Screenshot")
+Blender addon to export JBeam files for BeamNG.drive driving simulator.
 
+![Demo screenshot](https://raw.github.com/50thomatoes50/BlenderBeamNGExport/master/img/blender_bng.JPG "Screenshot")
 
-* Instalation and Usage at :  http://wiki.beamng.com/Blender_Exporter_plugin
+## Minimum Requirements
+- **Blender 2.80**
 
-update from rmikebaker/BlenderBeamNGExport:master
--------------------
-from commit:5ec8555d0ad207a946ca51927e50f1a0fa290db0
-* Use the bpy::ExportHelper
+For older version check version [0.2.1](https://github.com/50thomatoes50/BlenderBeamNGExport/releases/tag/v0.2.1) (should be compatible with Blender 2.65-2.79)
 
+## Documentation
+Documentation and usage is available **[here](http://wiki.beamng.com/Blender_Exporter_plugin)** on the BeamNG.drive wiki.
 
-Changelog
--------------------
-Change Log is available [here](https://github.com/50thomatoes50/BlenderBeamNGExport/blob/master/changelod.md)
+## Release Notes
+Release Notes are available **[here](./CHANGELOG.md)**.
+
+## Credits
+- [rmikebaker](https://github.com/rmikebaker) – Original [addon](https://github.com/rmikebaker/BlenderBeamNGExport)

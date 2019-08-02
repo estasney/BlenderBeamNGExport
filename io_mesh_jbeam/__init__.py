@@ -16,117 +16,146 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Script copyright (C) Thomas PORTASSAU (50thomatoes50)
+# Script copyright (C) Thomas PORTASSAU (50thomatoes50) & Julien VANELIAN (Distrikt64/Juju)
 
 # <pep8-80 compliant>
 
 bl_info = {
-    "name": "Export Jbeam (.jbeam)",
-    "author": "Mike Baker (rmikebaker) & Thomas Portassau (50thomatoes50)",
+    "name": "Export BeamNG.drive JBeam format (.jbeam)",
+    "author": "Mike Baker (rmikebaker), Thomas Portassau (50thomatoes50), Julien Vanelian (Distrikt64/Juju)",
     "location": "File > Import-Export",
-    "version": (0, 2, 0),
+    "version": (0, 3, 0),
+    "blender": (2, 80, 0),
     "wiki_url": 'http://wiki.beamng.com/Blender_Exporter_plugin',
     "tracker_url": "https://github.com/50thomatoes50/BlenderBeamNGExport/issues",
-    "warning": "Under construction!",
-    "description": "Export Nodes,Beams and Colision for BeamNG (.jbeam)",
-    #"category": "Object"
+    "description": "Export nodes, beams and collision triangles for BeamNG.drive (.jbeam)",
     "category": "Import-Export"
-    }
+}
 
-import sys, io, bpy
-#__version__ = PrintVer(sys.modules.get(__name__).bl_info['version'])
-__version__ =''
-#http://wiki.blender.org/index.php/Dev:2.5/Py/Scripts/Cookbook/Code_snippets/Multi-File_packages#init_.py
-"""if "bpy" in locals():
-    import imp
-    if "export_jbeam" in locals():
-        imp.reload(export_jbeam)
-else:
-    import bpy"""
-import imp,os, sys
-for filename in [ f for f in os.listdir(os.path.dirname(os.path.realpath(__file__))) if f.endswith(".py") ]:
-	if filename == os.path.basename(__file__): continue
-	mod = sys.modules.get("{}.{}".format(__name__,filename[:-3]))
-	if mod: imp.reload(mod)
+import bpy
+import imp
+import os
+import bmesh
 
 from bpy.props import *
 from bpy.utils import *
-from .tools import *
+from bpy.app.handlers import persistent
+from .utils import *
 from . import export_jbeam
+from . import updater
+
+for filename in [f for f in os.listdir(os.path.dirname(os.path.realpath(__file__))) if f.endswith(".py")]:
+    if filename == os.path.basename(__file__):
+        continue
+
+    mod = sys.modules.get("{}.{}".format(__name__, filename[:-3]))
+
+    if mod:
+        imp.reload(mod)
 
 
-class BeamGen(bpy.types.Operator):
-    bl_idname = 'object.beamgen'
-    bl_description = 'beamGen'  + ' v.' + PrintVer()
-    bl_label = 'beam(edge) generator'
+class OBJECT_OT_nodes_connector(bpy.types.Operator):
+    bl_idname = 'object.nodes_connector'
+    bl_description = 'Create beams/edges between selected nodes/vertices\nBlenderBeamNGExport v.' + print_version()
+    bl_label = 'NodesConnector (Previously named `BeamGen`)'
+    bl_options = {'REGISTER', 'UNDO'}
 
-    # execute() is called by blender when running the operator.
     def execute(self, context):
-        print("started")
+        active_object = context.edit_object
 
-        # Save currently active object
-        #active = context.active_object
-        active = context.edit_object
-        if active is None:
-            self.report({'WARNING'}, 'WARNING : Not in edit mode! Operation cancelled!')
-            print('CANCELLLED: Not in edit mode')
+        if active_object is None:
+            self.report({'ERROR'}, 'NodesConnector only operates in edit mode')
             return {'CANCELLED'}
 
-        print("obj:"+active.name)
-        nodes = []
-        edge_tmp = []
+        if not isinstance(active_object, bpy.types.Object) or not isinstance(active_object.data, bpy.types.Mesh):
+            self.report({'ERROR'}, 'NodesConnector only operates on Meshes')
+            return {'CANCELLED'}
 
-        bpy.ops.object.mode_set(mode='OBJECT')
+        bm = bmesh.from_edit_mesh(active_object.data)
 
-        for v in active.data.vertices:
-            if v.select:
-                nodes.append(v.index)
+        selected_vertices = [] #array of BMVert
 
-        nb_point = len(nodes)
-        print("nb_point:"+str(nb_point))
-        if nb_point <= 1:
-            self.report({'ERROR'}, 'ERROR: Select more than 1 point' )
+        for vertex in bm.verts:
+            if vertex.select:
+                selected_vertices.append(vertex)
 
+        vertex_count = len(selected_vertices)
 
-        origin = len(active.data.edges)-1
-        i = 0
-        nb_edge = 0
-        j = nb_point
-        while(j!=0):
-            j -= 1
-            nb_edge += (nb_point-(nb_point-j))
-        active.data.edges.add( nb_edge )
+        if vertex_count <= 1:
+            self.report({'ERROR'}, 'Select more than 1 vertex')
+            bm.free()
+            bpy.ops.object.mode_set(mode='EDIT')
+            return {'CANCELLED'}
 
-        for n1 in nodes:
-            for n2 in nodes:
-                if n1 != n2 and n2 > n1 :
-                    i += 1
-                    active.data.edges[origin+i].vertices[0] = n1
-                    active.data.edges[origin+i].vertices[1] = n2
+        edge_created = 0
+        edge_existed = 0
 
-        bpy.ops.object.mode_set(mode='EDIT')
+        for n1 in selected_vertices:
+            for n2 in selected_vertices:
+                if n1 != n2 and n2.index > n1.index:
+                    if bm.edges.get([n1,n2]) is None: #this already check for edges in the other direction, eg:[n2,n1] would return the same edge
+                        edge_created += 1
+                        bm.edges.new([n1,n2])
+                    else:
+                        edge_existed +=1
 
+        if edge_created > 0:
+            bmesh.update_edit_mesh(active_object.data)
+        bm.free()
 
-
-        # this lets blender know the operator finished successfully.
+        self.report({'INFO'}, 'NodesConnector successfully created %d edge(s), %d already existed'%(edge_created, edge_existed))
         return {'FINISHED'}
 
-class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
-    bl_label = 'Export Jbeam' + ' v.' + PrintVer()
+
+class MENU_MT_jbeam_mesh(bpy.types.Menu):
+    bl_label = 'JBeam'
 
     def draw(self, context):
+        self.layout.operator(OBJECT_OT_nodes_connector.bl_idname)
 
-        l = self.layout
-        l.operator_context = 'EXEC_DEFAULT'
 
-        exportables = context.selected_objects
-        if len(exportables):
-            single_obs = []
-            #print(exportables)
-            for s in exportables:
-                if s.type == 'MESH':
-                    single_obs.append(s)
-            '''groups = list([ex for ex in exportables if ex.ob_type == 'GROUP'])
+def menu_func_mesh(self, context):
+    layout = self.layout
+
+    layout.separator()
+    layout.menu("MENU_MT_jbeam_mesh")
+
+
+class PREFERENCES_PF_jbeam_addon(bpy.types.AddonPreferences):
+    bl_idname = __name__
+
+    default_export_path = get_beamng_mod_path()
+
+    default_export_path: bpy.props.StringProperty(
+        name="Default Export Path",
+        description="Where all the .jbeam files will be saved by default " +
+                    "the next time you start blender or you open a new file",
+        subtype='DIR_PATH',
+        default=default_export_path,
+        update=utils.save_prefs)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.prop(self, "default_export_path")
+
+
+class MENU_MT_jbeam_export(bpy.types.Menu):
+    bl_label = 'Export JBeam'
+
+    def draw(self, context):
+        layout = self.layout
+        layout.operator_context = 'EXEC_DEFAULT'
+
+        selected_objects = context.selected_objects
+
+        if len(selected_objects):
+            single_object = []
+
+            for selected_object in selected_objects:
+                if selected_object.type == 'MESH':
+                    single_object.append(selected_object)
+
+            '''groups = list([ex for ex in selected_objects if ex.ob_type == 'GROUP'])
             groups.sort(key=lambda g: g.name.lower())
 
             group_layout = l
@@ -135,195 +164,510 @@ class IO_mesh_jbeam_ExporterChoice(bpy.types.Menu):
                     if i == 0: group_col = l.column(align=True)
                     if i % 2 == 0: group_layout = group_col.row(align=True)
                 group_layout.operator(SmdExporter.bl_idname, text=group.name, icon='GROUP').group = group.get_id().name'''
-            group_col = l.column(align=True)
+
+            group_col = layout.column(align=True)
             group_layout = group_col.row(align=True)
-            #group_layout.operator(ExportJbeam.bl_idname, text="group.name", icon='GROUP')
-            num_obs = len(single_obs)
-            #print(single_obs)
-            #print(num_obs)
-            if num_obs > 1:
-                group_layout.operator(export_jbeam.ExportJbeam.bl_idname, text="Export slected objects ("+str(num_obs)+")", icon='OBJECT_DATA')
-            elif num_obs:
-                group_layout.operator(export_jbeam.ExportJbeam.bl_idname, text=single_obs[0].name, icon='MESH_DATA')
-        elif len(bpy.context.selected_objects):
-            row = l.row()
-            row.operator(export_jbeam.ExportJbeam.bl_idname, text="invalid selection",icon='ERROR')
-            row.enabled = False
+            # group_layout.operator(SCRIPT_OT_jbeam_export.bl_idname, text="group.name", icon='GROUP')
+            selected_object_count = len(single_object)
 
-        row = l.row()
-        num_scene_exports = getscene()
+            if selected_object_count > 1:
+                group_layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname,
+                                      text="Export selected objects (" + str(selected_object_count) + ")",
+                                      icon='OBJECT_DATA')
 
-        row.operator(export_jbeam.ExportJbeam.bl_idname, text="Scene(selectable): all mesh like *.jbeam ("+str(num_scene_exports)+")", icon='SCENE_DATA').export_scene = True
-        row.enabled = num_scene_exports > 0
+            elif selected_object_count:
+                group_layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text=single_object[0].name,
+                                      icon='MESH_DATA')
 
+        exportable_mesh_count = get_exportable_mesh_count()
 
-def getscene():
-    num=0
-    for obj in bpy.context.selectable_objects:
-        if (obj.type == 'MESH'):
-            if '.jbeam' in obj.name:
-                num+=1
-    return num
+        row = layout.row()
+        row.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname,
+                     text="Scene (selectable): all mesh like *.jbeam (" + str(exportable_mesh_count) + ")",
+                     icon='SCENE_DATA').export_scene = True
+        row.enabled = exportable_mesh_count > 0
+
 
 def menu_func_export(self, context):
-    #self.layout.operator(ExportJbeam.bl_idname, text='Export Jbeam v.' + __version__ + ' (.jbeam)')
-    self.layout.menu("IO_mesh_jbeam_ExporterChoice", text='Export Jbeam v.' + PrintVer() + ' (.jbeam)')
-
-updater_supported = True
-try:
-    import urllib.request, urllib.error, zipfile
-except:
-    updater_supported = False
+    self.layout.menu("MENU_MT_jbeam_export", text='JBeam (.jbeam)')
 
 
-class JbeamUpdated(bpy.types.Menu):
-    bl_label = "Jbeam updated"
-    def draw(self,context):
-        self.layout.operator("wm.url_open",text="Change log available at Github",icon='TEXT').url = "https://github.com/50thomatoes50/BlenderBeamNGExport/blob/master/changelod.md"
-
-
-class JbeamUpdater(bpy.types.Operator):
-    bl_idname = "script.update_jbeam"
-    bl_label = "Jbeam updater"
-    bl_description = "updater for Jbeam addon."
-
-    @classmethod
-    def poll(self,context):
-        return updater_supported
-
-    def execute(self,context):
-        print("Jbeam update...")
-
-        import sys
-        cur_version = sys.modules.get(__name__.split(".")[0]).bl_info['version']
-
-        try:
-            data = urllib.request.urlopen("https://raw.githubusercontent.com/50thomatoes50/BlenderBeamNGExport/master/io_mesh_jbeam/version.json").read().decode('ASCII').split("\n")
-            remote_ver = data[0].strip().split(".")
-            remote_bpy = data[1].strip().split(".")
-            download_url = data[2].strip()
-
-            for i in range(min( len(remote_bpy), len(bpy.app.version) )):
-                if int(remote_bpy[i]) > bpy.app.version[i]:
-                    self.report({'ERROR'},"Blender is outdated. min ver: "+ '.'.join(remote_bpy) )
-                    return {'FINISHED'}
-
-            for i in range(min( len(remote_ver), len(cur_version) )):
-                try:
-                    diff = int(remote_ver[i]) - int(cur_version[i])
-                except ValueError:
-                    continue
-                if diff > 0:
-                    print("Found new version {}, downloading from {}...".format(PrintVer(remote_ver), download_url))
-
-                    zip = zipfile.ZipFile( io.BytesIO(urllib.request.urlopen(download_url).read()))
-                    zip.extractall(path=os.path.join(os.path.dirname( os.path.abspath( __file__ ) ),".."))
-
-                    self.report({'INFO'},"update done "+PrintVer(remote_ver) )
-                    bpy.ops.wm.call_menu(name="JbeamUpdated")
-                    return {'FINISHED'}
-
-            self.report({'INFO'},"update already latest "+ PrintVer(cur_version) )
-            return {'FINISHED'}
-
-        except urllib.error.URLError as err:
-            self.report({'ERROR'}," ".join(["update err download failed : " + str(err)]))
-            return {'CANCELLED'}
-        except zipfile.BadZipfile:
-            self.report({'ERROR'},"update err corruption")
-            return {'CANCELLED'}
-        except IOError as err:
-            self.report({'ERROR'}," ".join(["update err unknown : ", str(err)]))
-            return {'CANCELLED'}
-
-
-class JBEAM_Scene(bpy.types.Panel):
+class PANEL_PT_jbeam_scene(bpy.types.Panel):
     bl_label = "JBeam Exporter"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "scene"
-    bl_default_closed = True
+
     def draw(self, context):
-        l = self.layout
+        layout = self.layout
         scene = context.scene
-        num_to_export = 0
 
-        l.operator(export_jbeam.ExportJbeam.bl_idname,text="Export")
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
 
-        row = l.row()
-        row.alignment = 'CENTER'
+        layout.operator(export_jbeam.SCRIPT_OT_jbeam_export.bl_idname, text="Export JBeam", icon="EXPORT")
 
-        row = l.row()
+        row = layout.row()
         row.alert = len(scene.jbeam.export_path) == 0
-        row.prop(scene.jbeam,"export_path")
+        row.prop(scene.jbeam, "export_path")
 
-        #row = l.row().split(0.33)
-        #row.label(text="Export format")
-        #row.row().prop(scene.jbeam,"export_format",expand=True)
+        row = layout.row()
+        row.prop(scene.jbeam, "export_format", expand=True)
 
-        row = l.row()
-        row.prop(scene.jbeam,"listbn")
-        row.prop(scene.jbeam,"exp_ef")
+        row = layout.row()
+        row.prop(scene.jbeam, 'backup')
 
-        row = l.row()
-        row.prop(scene.jbeam,"exp_tricol")
-        row.prop(scene.jbeam,"exp_diag")
 
-class Jbeam_SceneProps(bpy.types.PropertyGroup):
-    export_path = StringProperty(name="Export Path",description="Where all .jbeam will be saved", subtype='DIR_PATH')
-    export_format = EnumProperty(name="Export Format",items=( ('sel', "Selected", "Every selected object" ), ('.jbeam', "*.jbeam", "All mesh with the name *.jbeam" ) ),default='.jbeam')
-    listbn = bpy.props.BoolProperty(name = "List", description="Export has a list of beam and nodes\nElse export as a jbean file(json)", default = False)
-    exp_ef = bpy.props.BoolProperty(name = "Edge from face", description="Export edge from face", default = True)
-    exp_tricol = bpy.props.BoolProperty(name = "colision triangle", description="Export Faces to colision triangle", default = True)
-    exp_diag = bpy.props.BoolProperty(name = "Diagonal quad face", description="Edge on quad face (automatic diagonal)", default = True)
-    incompatible = bpy.props.BoolProperty(name = "Incompatible type", description="This type of object is not compatible with the exporter. Use mesh type please.", default = True)
+class PANEL_PT_jbeam_scene_information(bpy.types.Panel):
+    bl_label = "Information"
+    bl_parent_id = "PANEL_PT_jbeam_scene"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
 
-class Jbeam_ObjProps(bpy.types.PropertyGroup):
-    name = StringProperty(name="Name",description="", default="")
-    slot = StringProperty(name="Slot of this jbeam",description="", default="main")
-    nodename = StringProperty(name="Prefix of nodes",description="", default="n")
+    def draw_header(self, context):
+        self.layout.prop(context.scene.jbeam, "export_information", text="")
 
-class JBEAM_Obj(bpy.types.Panel):
-    bl_label = "JBeam parameter"
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+        layout.active = scene.jbeam.export_information and scene.jbeam.export_format == 'jbeam'
+
+        row = layout.row()
+        row.prop(scene.jbeam, "author_names")
+
+
+class PANEL_PT_jbeam_scene_nodes(bpy.types.Panel):
+    bl_label = "Nodes"
+    bl_parent_id = "PANEL_PT_jbeam_scene"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw_header(self, context):
+        self.layout.prop(context.scene.jbeam, "export_nodes", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+        layout.active = scene.jbeam.export_nodes
+
+        col = layout.column()
+        col.prop(scene.jbeam, "export_node_groups")
+
+
+class PANEL_PT_jbeam_scene_beams(bpy.types.Panel):
+    bl_label = "Beams"
+    bl_parent_id = "PANEL_PT_jbeam_scene"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw_header(self, context):
+        self.layout.prop(context.scene.jbeam, "export_beams", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+        layout.active = scene.jbeam.export_beams
+
+        flow = layout.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=True)
+
+        column = flow.column()
+        column.prop(scene.jbeam, "export_edges_from_faces")
+
+        column = flow.column()
+        column.active = scene.jbeam.export_edges_from_faces
+        column.prop(scene.jbeam, "export_face_diagonals")
+
+
+class PANEL_PT_jbeam_scene_collision_triangles(bpy.types.Panel):
+    bl_label = "Collision Triangles"
+    bl_parent_id = "PANEL_PT_jbeam_scene"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw_header(self, context):
+        self.layout.prop(context.scene.jbeam, "export_collision_triangles", text="")
+
+    def draw(self, context):
+        layout = self.layout
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+        layout.active = context.scene.jbeam.export_collision_triangles
+
+        column = layout.column()
+        column.label(text="No properties yet.")
+
+
+class PANEL_PT_jbeam_scene_about(bpy.types.Panel):
+    bl_label = "About"
+    bl_parent_id = "PANEL_PT_jbeam_scene"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+
+        row = layout.row()
+        row.operator(updater.SCRIPT_OT_jbeam_update.bl_idname, text="Check For Updates", icon="QUESTION")
+
+        column = layout.column()
+        split = column.split()
+        sub = split.row()
+        sub.operator("wm.url_open", text="Documentation", icon="HELP").url = bl_info['wiki_url']
+        sub.operator("wm.url_open", text="Report a Bug", icon='URL').url = bl_info['tracker_url']
+
+        column = layout.column()
+        column.label(text="Blender BeamNG Jbeam Exporter v" + print_version())
+        column.separator()
+        column.label(text="Maintainers : Thomas Portassau (50thomatoes50), Julien Vanelian (Distrikt64/Juju)")
+        column.label(text="Orginal addon : Mike Baker (rmikebaker)")
+
+
+class PANEL_PT_jbeam_object(bpy.types.Panel):
+    bl_label = "JBeam Properties"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "data"
-    bl_default_closed = True
+
     def draw(self, context):
-        l = self.layout
-        if(not (context.active_object.type == "MESH")):
-            #print("Object not mesh")
-            row = l.row()
-            row.prop(context.scene.jbeam,"incompatible")
+        layout = self.layout
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+
+        if not context.active_object.type == "MESH":
+            column = layout.column()
+            column.label(text='Non-mesh objects are not compatible with the exporter.',
+                         icon='ERROR')
+
+
+class PANEL_PT_jbeam_object_information(bpy.types.Panel):
+    bl_label = "Information"
+    bl_parent_id = "PANEL_PT_jbeam_object"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw_header(self, context):
+        if context.active_object.type == "MESH":
+            self.layout.prop(context.active_object.data.jbeam, "export_information", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        active_object = context.active_object
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+
+        # Don't load the properties as they don't exist in the objects's data
+        if not active_object.type == "MESH" or not active_object.data.jbeam.export_information:
+            layout.active = False
         else:
-            obj = context.active_object.data
+            layout.active = context.scene.jbeam.export_format == 'jbeam' and context.scene.jbeam.export_information
 
-            row = l.row()
-            row.prop(obj.jbeam,"name")
+            object_data = active_object.data
 
-            row = l.row()
-            row.prop(obj.jbeam,"slot")
+            col = layout.column()
+            col.prop(object_data.jbeam, "name")
 
-            row = l.row()
-            row.prop(obj.jbeam,"nodename")
+            flow = layout.column_flow()
+
+            column = flow.column()
+            column.prop(active_object.data.jbeam, "export_value")
+
+            column = flow.column()
+            column.active = active_object.data.jbeam.export_value
+            column.prop(object_data.jbeam, "value", text="")
+
+
+class PANEL_PT_jbeam_object_slots(bpy.types.Panel):
+    bl_label = "Slots"
+    bl_parent_id = "PANEL_PT_jbeam_object"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw(self, context):
+        layout = self.layout
+        active_object = context.active_object
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+
+        # Don't load the properties as they don't exist in the objects's data
+        if not active_object.type == "MESH":
+            layout.active = False
+        else:
+            layout.active = context.scene.jbeam.export_format == 'jbeam'
+            col = layout.column()
+            col.prop(active_object.data.jbeam, "slot_type")
+
+
+class PANEL_PT_jbeam_object_nodes(bpy.types.Panel):
+    bl_label = "Nodes"
+    bl_parent_id = "PANEL_PT_jbeam_object"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw_header(self, context):
+        if context.active_object.type == "MESH":
+            self.layout.prop(context.active_object.data.jbeam, "export_nodes", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        active_object = context.active_object
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+
+        # Don't load the properties as they don't exist in the objects's data
+        if not active_object.type == "MESH" or not active_object.data.jbeam.export_nodes:
+            layout.active = False
+        else:
+            layout.active = scene.jbeam.export_nodes
+
+            col = layout.column()
+            col.prop(active_object.data.jbeam, "node_prefix")
+
+            col = layout.column()
+            col.active = scene.jbeam.export_node_groups
+            col.prop(active_object.data.jbeam, "export_node_groups")
+
+
+class PANEL_PT_jbeam_object_beams(bpy.types.Panel):
+    bl_label = "Beams"
+    bl_parent_id = "PANEL_PT_jbeam_object"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+
+    def draw_header(self, context):
+        if context.active_object.type == "MESH":
+            self.layout.prop(context.active_object.data.jbeam, "export_beams", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        active_object = context.active_object
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+
+        # Don't load the properties as they don't exist in the objects's data
+        if not active_object.type == "MESH" or not active_object.data.jbeam.export_beams:
+            layout.active = False
+        else:
+            layout.active = context.scene.jbeam.export_beams
+
+            flow = layout.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=True)
+
+            column = flow.column()
+            column.prop(active_object.data.jbeam, "export_edges_from_faces")
+
+            column = flow.column()
+            column.active = active_object.data.jbeam.export_edges_from_faces
+            column.prop(active_object.data.jbeam, "export_face_diagonals")
+
+
+class PANEL_PT_jbeam_object_collision_triangles(bpy.types.Panel):
+    bl_label = "Collision Triangles"
+    bl_parent_id = "PANEL_PT_jbeam_object"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw_header(self, context):
+        if context.active_object.type == "MESH":
+            self.layout.prop(context.active_object.data.jbeam, "export_collision_triangles", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        active_object = context.active_object
+
+        layout.use_property_split = True  # Active single-column layout
+        layout.use_property_decorate = False
+
+        # Don't load the properties as they don't exist in the objects's data
+        if not active_object.type == "MESH" or not active_object.data.jbeam.export_collision_triangles:
+            layout.active = False
+        else:
+            layout.active = context.scene.jbeam.export_collision_triangles
+
+            column = layout.column()
+            column.label(text="No properties yet.")
+
+
+class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
+    #default_export_path = get_beamng_mod_path()
+
+    export_path: bpy.props.StringProperty(
+        name="Export Path",
+        description="Where all the .jbeam files will be saved",
+        subtype='DIR_PATH',
+        default="//jbeam_exported/")
+    export_format: bpy.props.EnumProperty(
+        name="Export Format",
+        items=[("jbeam", "JBeam", "Export as a JBeam file"),
+               ("list", "List", "Export as a bare list of nodes, beams and collision triangles"),
+               ])
+    backup: bpy.props.BoolProperty(
+        name="Backup Before Exporting",
+        description="Backup the old JBeam file before exporting the new one",
+        default=False)
+    export_information: bpy.props.BoolProperty(
+        name="Information",
+        description="Export basic part information",
+        default=True)
+    export_nodes: bpy.props.BoolProperty(
+        name="Nodes",
+        description="Export vertices to nodes",
+        default=True)
+    export_node_groups: bpy.props.BoolProperty(
+        name="Node Groups",
+        description="Export vertex groups to node groups",
+        default=True)
+    export_beams: bpy.props.BoolProperty(
+        name="Beams",
+        description="Export edges to beams",
+        default=True)
+    export_collision_triangles: bpy.props.BoolProperty(
+        name="Collision Triangles",
+        description="Export faces to collision triangles",
+        default=True)
+    export_edges_from_faces: bpy.props.BoolProperty(
+        name="Edges From Faces",
+        description="Export edges from faces",
+        default=True)
+    export_face_diagonals: bpy.props.BoolProperty(
+        name="Diagonal Quad Faces",
+        description="Edge on quad face (automatic diagonals)",
+        default=True)
+    author_names: bpy.props.StringProperty(
+        name="Authors",
+        description="Author names")
+
+
+class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(
+        name="Name",
+        description="Part name",
+        default="")
+    value: bpy.props.IntProperty(
+        name="Value",
+        description="Part cost",
+        min=0)
+    slot_type: bpy.props.StringProperty(
+        name="Type",
+        description="Slot type for this part",
+        default="main")
+    node_prefix: bpy.props.StringProperty(
+        name="Prefix",
+        description="String prefix used for node names",
+        default="n")
+    export_information: bpy.props.BoolProperty(
+        name="Information",
+        description="Export basic part information",
+        default=True)
+    export_value: bpy.props.BoolProperty(
+        name="Value",
+        description="Enable/Disable part value (cost)",
+        default=False)
+    export_nodes: bpy.props.BoolProperty(
+        name="Nodes",
+        description="Export vertices to nodes",
+        default=True)
+    export_node_groups: bpy.props.BoolProperty(
+        name="Node Groups",
+        description="Export vertex groups to node groups",
+        default=True)
+    export_beams: bpy.props.BoolProperty(
+        name="Beams",
+        description="Export edges to beams",
+        default=True)
+    export_edges_from_faces: bpy.props.BoolProperty(
+        name="Edges From Faces",
+        description="Export edges from faces",
+        default=True)
+    export_face_diagonals: bpy.props.BoolProperty(
+        name="Diagonal Quad Faces",
+        description="Edge on quad face (automatic diagonals)",
+        default=True)
+    export_collision_triangles: bpy.props.BoolProperty(
+        name="Collision Triangles",
+        description="Export faces to collision triangles",
+        default=True)
+
+
+classes = (
+    OBJECT_OT_nodes_connector,
+    MENU_MT_jbeam_mesh,
+    MENU_MT_jbeam_export,
+    PREFERENCES_PF_jbeam_addon,
+    PANEL_PT_jbeam_scene,
+    PROPERTIES_PG_jbeam_scene,
+    PROPERTIES_PG_jbeam_object,
+    PANEL_PT_jbeam_object,
+    PANEL_PT_jbeam_object_information,
+    PANEL_PT_jbeam_object_slots,
+    PANEL_PT_jbeam_object_nodes,
+    PANEL_PT_jbeam_object_beams,
+    PANEL_PT_jbeam_object_collision_triangles,
+    PANEL_PT_jbeam_scene_information,
+    PANEL_PT_jbeam_scene_nodes,
+    PANEL_PT_jbeam_scene_beams,
+    PANEL_PT_jbeam_scene_collision_triangles,
+    PANEL_PT_jbeam_scene_about,
+    export_jbeam.SCRIPT_OT_jbeam_export,
+    updater.SCRIPT_OT_jbeam_update,
+    updater.MENU_MT_jbeam_updated
+)
+
+
+# Ran each time a .blend file loads
+@persistent
+def load_post_handler(scene): #DISABLED FOR NOW
+    scene = bpy.context.scene
+
+    # If it's a new file, or it doesn't have the scene export path property, get the export path from the preferences
+    if not bpy.data.filepath or not scene.jbeam.export_path or bpy.data.filepath and not scene.jbeam.export_path:
+        addon = bpy.context.preferences.addons.get('io_mesh_jbeam')
+        scene.jbeam.export_path = addon.preferences.default_export_path
+
 
 def register():
-    bpy.utils.register_module(__name__)
-    bpy.types.INFO_MT_file_export.append(menu_func_export)
-    #bpy.utils.register_class(BeamGen)
-    def make_pointer(prop_type):
-        return PointerProperty(name="Jbeam settings",type=prop_type)
+    for c in classes:
+        bpy.utils.register_class(c)
 
-    bpy.types.Scene.jbeam = make_pointer(Jbeam_SceneProps)
-    bpy.types.Mesh.jbeam = make_pointer(Jbeam_ObjProps)
+    bpy.types.VIEW3D_MT_edit_mesh.append(menu_func_mesh)
+    bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
+
+    def make_pointer(prop_type):
+        return bpy.props.PointerProperty(name="Jbeam settings", type=prop_type)
+
+    bpy.types.Scene.jbeam = make_pointer(PROPERTIES_PG_jbeam_scene)
+    bpy.types.Mesh.jbeam = make_pointer(PROPERTIES_PG_jbeam_object)
+    #bpy.app.handlers.load_post.append(load_post_handler)
 
 
 def unregister():
-    bpy.utils.unregister_module(__name__)
-    bpy.types.INFO_MT_file_export.remove(menu_func_export)
-    #bpy.utils.unregister_class(BeamGen)
+    for c in reversed(classes):
+        bpy.utils.unregister_class(c)
+
+    bpy.types.VIEW3D_MT_edit_mesh.remove(menu_func_mesh)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
     del bpy.types.Scene.jbeam
     del bpy.types.Mesh.jbeam
+    #bpy.app.handlers.load_post.remove(load_post_handler)
+
 
 # This allows you to run the script directly from blenders text editor
 # to test the addon without having to install it.
