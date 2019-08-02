@@ -507,13 +507,13 @@ class PANEL_PT_jbeam_object_collision_triangles(bpy.types.Panel):
 
 
 class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
-    default_export_path = get_beamng_mod_path()
+    #default_export_path = get_beamng_mod_path()
 
     export_path: bpy.props.StringProperty(
         name="Export Path",
         description="Where all the .jbeam files will be saved",
         subtype='DIR_PATH',
-        default=default_export_path)
+        default="//jbeam_exported/")
     export_format: bpy.props.EnumProperty(
         name="Export Format",
         items=[("jbeam", "JBeam", "Export as a JBeam file"),
@@ -634,7 +634,7 @@ classes = (
 
 # Ran each time a .blend file loads
 @persistent
-def load_post_handler(scene):
+def load_post_handler(scene): #DISABLED FOR NOW
     scene = bpy.context.scene
 
     # If it's a new file, or it doesn't have the scene export path property, get the export path from the preferences
@@ -655,7 +655,7 @@ def register():
 
     bpy.types.Scene.jbeam = make_pointer(PROPERTIES_PG_jbeam_scene)
     bpy.types.Mesh.jbeam = make_pointer(PROPERTIES_PG_jbeam_object)
-    bpy.app.handlers.load_post.append(load_post_handler)
+    #bpy.app.handlers.load_post.append(load_post_handler)
 
 
 def unregister():
@@ -666,7 +666,7 @@ def unregister():
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
     del bpy.types.Scene.jbeam
     del bpy.types.Mesh.jbeam
-    bpy.app.handlers.load_post.remove(load_post_handler)
+    #bpy.app.handlers.load_post.remove(load_post_handler)
 
 
 # This allows you to run the script directly from blenders text editor

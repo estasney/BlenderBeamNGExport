@@ -179,13 +179,20 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                         self.report({'ERROR'}, "Save the .blend file first.")
                         return {'CANCELLED'}
 
+                if context.scene.jbeam.export_path.startswith("//"):
                     self.filepath = bpy.path.abspath(context.scene.jbeam.export_path)
+                elif self.filepath == "" or self.filepath.startswith("//") :
+                    self.filepath = bpy.path.abspath(self.filepath)
 
-                if not context.scene.jbeam.export_path.startswith("//"):
-                    if not (os.path.isdir(self.filepath)):
-                        # Creates the path if it doesn't exists
-                        # useful if the default BeamNG mod directory doesn't exist
-                        os.makedirs(self.filepath)
+                if not (os.path.isdir(self.filepath)):
+                    # Creates the path if it doesn't exists
+                    # useful if the default BeamNG mod directory doesn't exist
+                    try:
+                        os.makedirs(self.filepath, exist_ok=True)
+                    except Exception as e:
+                        print(e)
+                        self.report({'ERROR'}, 'ERROR : Could not create export directories')
+                        return {'CANCELLED'}
 
                 # If the file already exists
                 if context.scene.jbeam.backup and os.path.isfile(self.filepath + filename):

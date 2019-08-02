@@ -9,8 +9,6 @@
     - Added JBeam property overrides: Enable or disable JBeam sections/properties per object or from the scene
     - Added an automatic backup before export feature
     - Added an 'About' section in the scene JBeam panel
-    - Added a default export path in the addon preferences
-    - Added an authors property
     - Added an optional cost value property
     - BeamGen can now be run from `Mesh > JBeam > BeamGen` in edit mode
     - Added a notification when the export succeeded or when BeamGen successfully executed
