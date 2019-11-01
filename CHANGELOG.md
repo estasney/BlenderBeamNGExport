@@ -1,6 +1,9 @@
 # Release Notes
 
-## 0.3.0 (WIP)
+## 0.3.1
+ - Fix for Blender 2.83 (removed unused and outdated argument)
+
+## 0.3.0
  - Blender 2.80 support!
 
 
@@ -18,7 +21,7 @@
     - Vertex Groups can now be used to export Node Groups!
     - JBeam indentation fixes for the exported files
     - Bugfixes and lots of code cleanup!
-	
+
 ## 0.2.1
  - fix updater exception when printing outdated blender version
 
