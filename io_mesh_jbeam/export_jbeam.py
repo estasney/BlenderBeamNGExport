@@ -233,7 +233,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                     jbeam_file.write('\t"slotType":"%s",\n' % export_object.data.jbeam.slot_type)
 
-                mesh.update(calc_edges=True, calc_loop_triangles=True)
+                mesh.update(calc_edges=True)
 
                 i = 0
 
@@ -413,7 +413,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                         jbeam_file.write('\t"triangles":[\n\t\t["id1:", "id2:", "id3:"],\n')
 
                     mesh = temp_object.data
-                    mesh.update(calc_edges=True, calc_loop_triangles=True)
+                    mesh.update(calc_edges=True)
 
                     for face in mesh.polygons:
                         vertices = face.vertices
