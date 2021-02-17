@@ -1,5 +1,8 @@
 # Release Notes
 
+## 0.3.2
+ - Fix for Blender 2.9x (removed unused and outdated argument)
+
 ## 0.3.1
  - Fix for Blender 2.83 (removed unused and outdated argument)
 
