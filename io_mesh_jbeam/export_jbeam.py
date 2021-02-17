@@ -407,7 +407,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     jbeam_file.write('//--Collision Triangles--')
                     jbeam_file.write(new_line)
                     temp_object.modifiers.new("tricol", "TRIANGULATE")
-                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier="tricol")
+                    bpy.ops.object.modifier_apply(modifier="tricol")
 
                     if context.scene.jbeam.export_format == 'jbeam':
                         jbeam_file.write('\t"triangles":[\n\t\t["id1:", "id2:", "id3:"],\n')
