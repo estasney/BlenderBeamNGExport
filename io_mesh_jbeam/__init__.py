@@ -71,6 +71,7 @@ class OBJECT_OT_nodes_connector(bpy.types.Operator):
             self.report({'ERROR'}, 'NodesConnector only operates on Meshes')
             return {'CANCELLED'}
 
+        #from doc, python manage memory. no need to free manually or else it will crash
         bm = bmesh.from_edit_mesh(active_object.data)
 
         selected_vertices = [] #array of BMVert
@@ -83,7 +84,6 @@ class OBJECT_OT_nodes_connector(bpy.types.Operator):
 
         if vertex_count <= 1:
             self.report({'ERROR'}, 'Select more than 1 vertex')
-            bm.free()
             bpy.ops.object.mode_set(mode='EDIT')
             return {'CANCELLED'}
 
@@ -101,7 +101,6 @@ class OBJECT_OT_nodes_connector(bpy.types.Operator):
 
         if edge_created > 0:
             bmesh.update_edit_mesh(active_object.data)
-        bm.free()
 
         self.report({'INFO'}, 'NodesConnector successfully created %d edge(s), %d already existed'%(edge_created, edge_existed))
         return {'FINISHED'}
