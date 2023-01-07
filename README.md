@@ -28,3 +28,4 @@ Release Notes are available **[here](./CHANGELOG.md)**.
 
 ## Credits
 - [rmikebaker](https://github.com/rmikebaker) – Original [addon](https://github.com/rmikebaker/BlenderBeamNGExport)
+- [JulienVanelian](https://github.com/JulienVanelian) - 0.3 UI rewrite
