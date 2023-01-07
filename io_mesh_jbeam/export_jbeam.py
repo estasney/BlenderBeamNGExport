@@ -233,7 +233,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                     jbeam_file.write('\t"slotType":"%s",\n' % export_object.data.jbeam.slot_type)
 
-                mesh.update(calc_edges=True)
+                mesh.update(calc_edges=True, calc_edges_loose=True)
 
                 i = 0
 
@@ -311,16 +311,17 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     if context.scene.jbeam.export_format == 'jbeam':
                         jbeam_file.write('\t"beams":[\n\t\t["id1:", "id2:"],\n')
 
-                    for e in mesh.edges:
+                    for edge in mesh.edges:
+                        if not edge.is_loose: continue
                         if context.scene.jbeam.export_format == 'list':
                             jbeam_file.write('[\"')
                         else:
                             jbeam_file.write('\t\t[\"')
 
-                        node_index1 = ([n.id_ for n in sorted_nodes].index(e.vertices[0]))
+                        node_index1 = ([n.id_ for n in sorted_nodes].index(edge.vertices[0]))
                         jbeam_file.write('%s\"' % sorted_nodes[node_index1].node_name)
                         jbeam_file.write(',')
-                        node_index2 = ([n.id_ for n in sorted_nodes].index(e.vertices[1]))
+                        node_index2 = ([n.id_ for n in sorted_nodes].index(edge.vertices[1]))
                         jbeam_file.write('\"%s\"' % sorted_nodes[node_index2].node_name)
                         jbeam_file.write('],')
                         jbeam_file.write(new_line)
@@ -413,7 +414,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                         jbeam_file.write('\t"triangles":[\n\t\t["id1:", "id2:", "id3:"],\n')
 
                     mesh = temp_object.data
-                    mesh.update(calc_edges=True)
+                    mesh.update(calc_edges=True, calc_edges_loose=True)
 
                     for face in mesh.polygons:
                         vertices = face.vertices

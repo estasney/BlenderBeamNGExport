@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.3.3
+ - fix exception/crash when using NodesConnector  operator (Previously named `BeamGen`)
+ - fix duplicated Beans attached to polygons
+
 ## 0.3.2
  - Fix for Blender 2.9x (removed unused and outdated argument)
 
