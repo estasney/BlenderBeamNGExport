@@ -279,10 +279,6 @@ class PANEL_PT_jbeam_scene_beams(bpy.types.Panel):
         flow = layout.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=True)
 
         column = flow.column()
-        column.prop(scene.jbeam, "export_edges_from_faces")
-
-        column = flow.column()
-        column.active = scene.jbeam.export_edges_from_faces
         column.prop(scene.jbeam, "export_face_diagonals")
 
 
@@ -470,10 +466,6 @@ class PANEL_PT_jbeam_object_beams(bpy.types.Panel):
             flow = layout.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=True)
 
             column = flow.column()
-            column.prop(active_object.data.jbeam, "export_edges_from_faces")
-
-            column = flow.column()
-            column.active = active_object.data.jbeam.export_edges_from_faces
             column.prop(active_object.data.jbeam, "export_face_diagonals")
 
 
@@ -542,10 +534,6 @@ class PROPERTIES_PG_jbeam_scene(bpy.types.PropertyGroup):
         name="Collision Triangles",
         description="Export faces to collision triangles",
         default=True)
-    export_edges_from_faces: bpy.props.BoolProperty(
-        name="Edges From Faces",
-        description="Export edges from faces",
-        default=True)
     export_face_diagonals: bpy.props.BoolProperty(
         name="Diagonal Quad Faces",
         description="Edge on quad face (automatic diagonals)",
@@ -591,10 +579,6 @@ class PROPERTIES_PG_jbeam_object(bpy.types.PropertyGroup):
     export_beams: bpy.props.BoolProperty(
         name="Beams",
         description="Export edges to beams",
-        default=True)
-    export_edges_from_faces: bpy.props.BoolProperty(
-        name="Edges From Faces",
-        description="Export edges from faces",
         default=True)
     export_face_diagonals: bpy.props.BoolProperty(
         name="Diagonal Quad Faces",
