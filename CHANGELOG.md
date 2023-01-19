@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.3.4
+ - removed `Export edges from faces` property and implementation. Another cause of duplicate Beams
+ - fix `Could not create export directories` when using scene property for Export path
+
 ## 0.3.3
  - fix exception/crash when using NodesConnector  operator (Previously named `BeamGen`)
  - fix duplicated Beans attached to polygons
