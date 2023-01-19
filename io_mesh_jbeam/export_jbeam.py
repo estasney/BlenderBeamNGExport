@@ -178,6 +178,7 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
 
                         self.report({'ERROR'}, "Save the .blend file first.")
                         return {'CANCELLED'}
+                    self.filepath = context.scene.jbeam.export_path
 
                 if context.scene.jbeam.export_path.startswith("//"):
                     self.filepath = bpy.path.abspath(context.scene.jbeam.export_path)
