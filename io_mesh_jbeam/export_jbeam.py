@@ -149,7 +149,8 @@ class SCRIPT_OT_jbeam_export(bpy.types.Operator):
                     0 in NGnode.groups.keys(), NGnode.groups[0].group if len(NGnode.groups) > 0 else 255))
 
                 # This dictionary is computed once, rather than every time we need to find the index of a node
-                sorted_node_idx = {i: node.id_ for i, node in enumerate(sorted_nodes)}
+                sorted_node_idx = {node.id_: i for i, node in enumerate(sorted_nodes)}
+
 
                 # Export
                 new_line = '\n'
