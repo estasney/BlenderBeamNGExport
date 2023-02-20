@@ -1,5 +1,8 @@
 # Release Notes
 
+## 0.3.5
+ - improved export speed by not sorting nodes everytime we need to write one line of jbeam. PR #40 @estasney
+
 ## 0.3.4
  - removed `Export edges from faces` property and implementation. Another cause of duplicate Beams
  - fix `Could not create export directories` when using scene property for Export path

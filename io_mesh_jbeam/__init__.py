@@ -24,7 +24,7 @@ bl_info = {
     "name": "Export BeamNG.drive JBeam format (.jbeam)",
     "author": "Mike Baker (rmikebaker), Thomas Portassau (50thomatoes50), Julien Vanelian (Distrikt64/Juju)",
     "location": "File > Import-Export",
-    "version": (0, 3, 4),
+    "version": (0, 3, 5),
     "blender": (2, 80, 0),
     "wiki_url": 'http://wiki.beamng.com/Blender_Exporter_plugin',
     "tracker_url": "https://github.com/50thomatoes50/BlenderBeamNGExport/issues",
